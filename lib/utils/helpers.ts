@@ -2,7 +2,7 @@ import figlet from 'figlet'
 import {MESSAGES} from "./messages";
 
 export const banner = () => {
-    console.log();
+    console.log("");
     figlet.text('Clean Scaffold.', {font: 'ANSI Shadow', width: 80, whitespaceBreak: true}, (err, data) => {
         if (err) return;
         console.log(data)

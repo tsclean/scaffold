@@ -6,6 +6,9 @@
    "bin": {
       "scaffold": "bin/scaffold.ts"
    },
+   "publishConfig": {
+      "access": "public"
+   },
    "scripts": {
       "start": "node ./dist/index.js",
       "build": "tsc -p tsconfig.json",
@@ -26,7 +29,7 @@
       "architecture",
       "typescript"
    ],
-   "author": "cleanjs@hotmail.com",
+   "author": "John Piedrahita",
    "license": "MIT",
    "bugs": {
       "url": "https://github.com/tsclean/scaffold/issues"
