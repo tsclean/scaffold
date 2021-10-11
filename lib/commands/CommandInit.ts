@@ -74,9 +74,11 @@ export class InitCommand implements yargs.CommandModule {
                     spinner.succeed("Installation completed")
                     spinner.stopAndPersist({
                         symbol: EMOJIS.ROCKET,
-                        prefixText: MESSAGES.PROJECT_SUCCESS(basePath),
-                        text: `cd ${args.name} && npm run watch`
+                        text: MESSAGES.PROJECT_SUCCESS(basePath)
                     });
+                    console.log("")
+                    console.log(`cd ${args.name} && npm run watch`)
+                    console.log("")
                 }, 1000 * 20);
             }
 
