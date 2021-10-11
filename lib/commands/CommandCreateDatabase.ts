@@ -80,9 +80,9 @@ export class DatabaseCreateCommand implements yargs.CommandModule {
 
         switch (database) {
             case "mongo":
-                packageJsonContent.devDependencies["@shelf/jest-mongodb"] = "^1.2.4"
+                packageJsonContent.devDependencies["@shelf/jest-mongodb"] = "^2.0.3"
                 packageJsonContent.devDependencies["@types/mongodb"] = "^4.0.7"
-                packageJsonContent.dependencies["mongodb"] = "^4.1.2"
+                packageJsonContent.dependencies["mongodb"] = "^4.1.1"
                 break;
             case "mysql":
                 packageJsonContent.dependencies["mysql"] = "^2.18.1"
@@ -138,7 +138,7 @@ export class DatabaseCreateCommand implements yargs.CommandModule {
             setTimeout(() => {
                 spinner.stopAndPersist({
                     symbol: EMOJIS.ROCKET,
-                    prefixText: ` ${EMOJIS.ROCKET} ${chalk.blue(`File ${chalk.green(base + "/src/index.ts")} has been updated successfully. \n`)}`,
+                    prefixText: `${EMOJIS.ROCKET} ${chalk.blue(`File ${chalk.green(base + "/src/index.ts")} has been updated successfully. \n`)}`,
                     text: chalk.green(`Database ${chalk.blue(path)} has been created successfully`)
                 });
             }, 2000);
