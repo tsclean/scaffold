@@ -187,7 +187,7 @@ dist
                 break;
         }
 
-        packageJsonContent.dependencies["clean-ts"] = "^1.1.1"
+        packageJsonContent.dependencies["@tsclean/core"] = "^1.0.1"
         packageJsonContent.dependencies["dotenv"] = "^10.0.0"
         packageJsonContent.dependencies["module-alias"] = "^2.2.2"
 
