@@ -76,7 +76,7 @@ export const CONFIG_POSTGRES = {
      * @returns
      */
     static getAppTemplate(): string {
-        return `import {Container} from "clean-ts";
+        return `import {Container} from "@tsclean/core";
 
 @Container({
     imports: [],
@@ -121,9 +121,8 @@ export class AppContainer {}
 
 Steps to run this project:
 
-1. Run \`npm i\` command
+1. Run \`npm watch\` command
 
-2. Run \`npm watch\` command
 `
     }
 
@@ -191,7 +190,7 @@ dist
         packageJsonContent.dependencies["dotenv"] = "^10.0.0"
         packageJsonContent.dependencies["module-alias"] = "^2.2.2"
 
-        packageJsonContent.scripts["start"] = "node ./dist/application/server.js"
+        packageJsonContent.scripts["start"] = "node ./dist/index.js"
         packageJsonContent.scripts["build"] = "rimraf dist && tsc -p tsconfig-build.json"
         packageJsonContent.scripts["watch"] = "nodemon --exec \"npm run build && npm run start\" --watch src --ext ts"
 
@@ -230,12 +229,14 @@ PORT=9000`
     }
 
     static getIndexTemplate() {
-        return `import {CleanFactory} from "clean-ts";
-import {AppContainer} from "./app";
-import {PORT} from "./config/environment";
+        return `import "module-alias/register";
+import {StartProjectServer} from "@tsclean/core";
+        
+import {AppContainer} from "@/application/app";
+import {PORT} from "@/application/config/environment";
     
 async function init() {
-    const app = await CleanFactory.create(AppContainer)
+    const app = await StartProjectServer.create(AppContainer)
     await app.listen(PORT, () => console.log('Running on port ' + PORT))
 }
    
