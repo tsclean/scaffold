@@ -163,4 +163,16 @@ app.ts configuration.
 
 ![](./assets/controller-template.png)
 
+3. After all the configuration you must create a method and put the corresponding decorator, the decorator maps the HTTP verb.
+
+HTTP verbs  => Decorators
+
+GET         => @Get()
+
+POST        => @Post()
+
+PUT         => @Put()
+
+DELETE      => @Delete()
+
 
