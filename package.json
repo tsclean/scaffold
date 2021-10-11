@@ -17,7 +17,7 @@
    },
    "repository": {
       "type": "git",
-      "url": "git+https://github.com/john-piedrahita/plugin-scaffold.git"
+      "url": "git+https://github.com/tsclean/scaffold.git"
    },
    "keywords": [
       "plugin",
@@ -26,12 +26,12 @@
       "architecture",
       "typescript"
    ],
-   "author": "citymanager02@gmail.com",
+   "author": "cleanjs@hotmail.com",
    "license": "MIT",
    "bugs": {
-      "url": "https://github.com/john-piedrahita/plugin-scaffold/issues"
+      "url": "https://github.com/tsclean/scaffold/issues"
    },
-   "homepage": "https://github.com/john-piedrahita/plugin-scaffold#readme",
+   "homepage": "https://github.com/tsclean/scaffold#readme",
    "devDependencies": {
       "@types/app-root-path": "^1.2.4",
       "@types/mkdirp": "^1.0.2",
