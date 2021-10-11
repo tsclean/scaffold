@@ -72,7 +72,7 @@ export class ControllerCreateCommand implements yargs.CommandModule {
                 const nameCapitalizeService = CommandUtils.capitalizeString(nameService);
                 const transformString = CommandUtils.transformInitialString(nameCapitalizeService);
 
-                return `import {Mapping} from "clean-ts";
+                return `import {Mapping} from "@tsclean/core";
 import {${nameCapitalizeService}ServiceImpl} from "@/domain/use-cases/impl/${nameService}-service-impl";
 
 @Mapping('api/v1/${nameService}')
@@ -87,7 +87,7 @@ export class ${nameCapitalizeService}Controller {
             };
         }
 
-        return `import {Mapping} from "clean-ts";
+        return `import {Mapping} from "@tsclean/core";
 
 @Mapping('')
 export class ${nameCapitalize}Controller {

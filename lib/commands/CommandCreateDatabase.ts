@@ -106,13 +106,13 @@ export class DatabaseCreateCommand implements yargs.CommandModule {
      */
     static async getTemplateToCreateDatabase(base, path, fileContent, database) {
 
-        await CommandUtils.deleteFile(base + "/src/application/index.ts")
-        await CommandUtils.createFile(path, fileContent)
+        await CommandUtils.deleteFile(base + "/src/index.ts");
+        await CommandUtils.createFile(path, fileContent);
 
-        const packageJsonContents = await CommandUtils.readFile(base + "/package.json")
+        const packageJsonContents = await CommandUtils.readFile(base + "/package.json");
 
-        await CommandUtils.createFile(base + "/package.json", DatabaseCreateCommand.appendPackageJson(packageJsonContents, database))
-        await CommandUtils.createFile(base + "/src/application/index.ts", DatabaseCreateCommand.getTemplateServer(database))
+        await CommandUtils.createFile(base + "/package.json", DatabaseCreateCommand.appendPackageJson(packageJsonContents, database));
+        await CommandUtils.createFile(base + "/src/index.ts", DatabaseCreateCommand.getTemplateServer(database));
 
         await DatabaseCreateCommand.executeCommand("npm install", path, base)
 
@@ -138,7 +138,7 @@ export class DatabaseCreateCommand implements yargs.CommandModule {
             setTimeout(() => {
                 spinner.stopAndPersist({
                     symbol: EMOJIS.ROCKET,
-                    prefixText: ` ${EMOJIS.ROCKET} ${chalk.blue(`File ${chalk.green(base + "/src/application/server.ts")} has been updated successfully. \n`)}`,
+                    prefixText: ` ${EMOJIS.ROCKET} ${chalk.blue(`File ${chalk.green(base + "/src/index.ts")} has been updated successfully. \n`)}`,
                     text: chalk.green(`Database ${chalk.blue(path)} has been created successfully`)
                 });
             }, 2000);

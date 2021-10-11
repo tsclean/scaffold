@@ -73,7 +73,7 @@ export class AdapterCreateCommand implements yargs.CommandModule {
         const name = CommandUtils.capitalizeString(param);
         switch (database) {
             case "mongo":
-                return `import {Provider} from "clean-ts";
+                return `import {Provider} from "@tsclean/core";
 import {${name}MongoRepositoryAdapter} from "@/infrastructure/driven-adapters/adapters/mongo-adapter/${param}-mongo-repository-adapter";
 
 export const ${name}MongoProvider: Provider = {
@@ -93,7 +93,7 @@ export const ${name}MongoProvider: Provider = {
                 nameRepository = name;
                 const nameCapitalizeRepository = CommandUtils.capitalizeString(nameRepository);
 
-                return `import {Injectable} from "clean-ts";
+                return `import {Injectable} from "@tsclean/core";
 import {I${nameCapitalizeRepository}Repository} from "@/domain/models/gateways/${param}-repository";
 
 @Injectable()
@@ -108,7 +108,7 @@ export class ${nameCapitalizeRepository}MongoRepositoryAdapter implements I${nam
     static appendServiceImplementation(param: string | undefined): string | Uint8Array {
         const name = CommandUtils.capitalizeString(param);
 
-        return `import {Adapter} from "clean-ts";
+        return `import {Adapter} from "@tsclean/core";
 import {I${name}Service} from "@/domain/use-cases/${param}-service";
 import {I${name}Repository} from "@/domain/models/gateways/${param}-repository";
 

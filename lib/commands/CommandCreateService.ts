@@ -64,7 +64,7 @@ export class ServiceCreateCommand implements yargs.CommandModule {
      */
     protected static getTemplateService(param: any) {
         const name = CommandUtils.capitalizeString(param)
-        return `import {Service} from "clean-ts";
+        return `import {Service} from "@tsclean/core";
 import {I${name}Service} from "@/domain/use-cases/${param}-service";
 
 @Service()

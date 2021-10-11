@@ -10,7 +10,7 @@ import {banner, errorMessage} from "../utils/helpers";
 import {ProjectInitTemplate} from "../templates/ProjectInitTemplate";
 
 export class InitCommand implements yargs.CommandModule {
-    command = "create:project"
+    command = "create:project --name=[project name]"
     describe = "Generate initial Clean Architecture project structure."
     
     builder(args: yargs.Argv) {

@@ -3,7 +3,7 @@ import {MESSAGES} from "./messages";
 
 export const banner = () => {
     console.log("");
-    figlet.text('Clean Scaffold.', {font: 'ANSI Shadow', width: 80, whitespaceBreak: true}, (err, data) => {
+    figlet.text('Clean Scaffold.', {font: 'ANSI Shadow', whitespaceBreak: true}, (err, data) => {
         if (err) return;
         console.log(data)
     });

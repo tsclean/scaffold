@@ -84,7 +84,7 @@ export const PostgresHelper = {
      */
     static getTemplateServerMongo() {
         return `import 'module-alias/register'
-import {CleanFactory} from "clean-ts";
+import {StartProjectServer} from "@tsclean/core";
 
 import { AppContainer } from '@/application/app';
 import { MONGODB_URI, PORT } from '@/application/config/environment';
@@ -93,7 +93,7 @@ import { MongoHelper } from '@/infrastructure/driven-adapters/adapters/mongo-ada
 MongoHelper.connect(MONGODB_URI)
     .then(async () => {
         console.log('Connected DB')
-        const app = await CleanFactory.create(AppContainer)
+        const app = await StartProjectServer.create(AppContainer)
         await app.listen(PORT, () => console.log('Running on port ' + PORT))
     .catch(error => console.log(error))
 })
@@ -105,15 +105,15 @@ MongoHelper.connect(MONGODB_URI)
      */
     static getTemplateServerMysql() {
         return `import 'module-alias/register'
-import {CleanFactory} from "clean-ts";
+import {StartProjectServer} from "@tsclean/core";
 
-import {AppContainer} from "./app";
-import {PORT} from "./config/environment";
+import {AppContainer} from "@/application/app";
+import {PORT} from "@/application/config/environment";
 import {MysqlHelper} from "@/infrastructure/driven-adapters/adapters/mysql-adapter/mysql-helper";
 
 MysqlHelper.connect()
     .then(async () => {
-        const app = await CleanFactory.create(AppContainer)
+        const app = await StartProjectServer.create(AppContainer)
         await app.listen(PORT, () => console.log('Running on port ' + PORT))})
     .catch(err => console.log(err))
 `
@@ -124,15 +124,15 @@ MysqlHelper.connect()
      */
     static getTemplateServerPostgres() {
         return `import 'module-alias/register'
-import {CleanFactory} from "clean-ts";
+import {StartProjectServer} from "@tsclean/core";
 
-import {AppContainer} from "./app";
+import {AppContainer} from "@/application/app";
 import {PORT} from "@/application/config/environment";
 import {PostgresHelper} from "@/infrastructure/driven-adapters/adapters/postgres-adapter/postgres-helper";
 
 PostgresHelper.connect()
     .then(async () => {
-        const app = await CleanFactory.create(AppContainer)
+        const app = await StartProjectServer.create(AppContainer)
         await app.listen(PORT, () => console.log('Running on port ' + PORT))})})
     .catch(err => console.log(err))
 `
