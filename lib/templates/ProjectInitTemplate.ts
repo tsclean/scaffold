@@ -95,6 +95,7 @@ export class AppContainer {}
     static getTsConfigTemplate(): string {
         return JSON.stringify({
             "compilerOptions": {
+                "experimentalDecorators": true,
                 "outDir": "./dist",
                 "module": "commonjs",
                 "target": "es2019",
