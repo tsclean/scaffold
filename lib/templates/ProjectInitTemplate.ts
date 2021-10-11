@@ -170,18 +170,20 @@ dist
 
         if (!packageJsonContent.devDependencies) packageJsonContent.devDependencies = {}
         Object.assign(packageJsonContent.devDependencies, {
-            "@types/node": "^14.17.21",
+            "@types/node": "^16.9.1",
+            "@types/jest": "^27.0.1",
             "nodemon": "^2.0.9",
             "rimraf": "^3.0.2",
+            "ts-jest": "^27.0.5",
             "ts-node": "^10.2.1",
             "typescript": "^4.4.3"
         })
 
         switch (database) {
             case "mongodb":
-                packageJsonContent.devDependencies["@shelf/jest-mongodb"] = "^1.2.4"
+                packageJsonContent.devDependencies["@shelf/jest-mongodb"] = "^2.0.3"
                 packageJsonContent.devDependencies["@types/mongodb"] = "^4.0.7"
-                packageJsonContent.dependencies["mongodb"] = "^4.1.2"
+                packageJsonContent.dependencies["mongodb"] = "^4.1.1"
                 break;
             default:
                 break;
