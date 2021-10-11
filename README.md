@@ -131,7 +131,11 @@ the tasks.
 
     Service configuration.
 
+![](./assets/service-template.png)
+
     app.ts configuration.
+
+![](./assets/config-service.png)
 
 
 ## Controller Generation
@@ -153,8 +157,10 @@ the tasks.
 
 app.ts configuration.
 
+![](./assets/controller-injectable.png)
+
 2. The naming convention must be applied between the service and the controller to generate the Dependency Injection in the controller and an endpoint to enter the application.
 
-
+![](./assets/controller-template.png)
 
 
