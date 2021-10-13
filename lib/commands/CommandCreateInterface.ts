@@ -5,6 +5,7 @@ import {EMOJIS} from "../utils/emojis";
 import {MESSAGES} from "../utils/messages";
 import {CommandUtils} from "./CommandUtils";
 import {banner, errorMessage} from "../utils/helpers";
+import chalk from "chalk";
 
 export class InterfaceCreateCommand implements yargs.CommandModule {
     command = "create:interface";
@@ -36,6 +37,10 @@ export class InterfaceCreateCommand implements yargs.CommandModule {
             banner()
 
             setTimeout(() => (spinner = ora('Installing...').start()), 1000)
+
+            if(args.path != "models" || args.path != "service" || args.path != "infra") {
+                throw MESSAGES.ERROR_INTERFACE(args.path);
+            }
 
             switch (args.path) {
                 case "models":

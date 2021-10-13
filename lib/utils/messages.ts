@@ -11,4 +11,5 @@ export const MESSAGES = {
     FILE_EXISTS: (path) => `${EMOJIS.NO_ENTRY} File ${chalk.blue(path)} already exists`,
     CONFIG_ENV: () => `${chalk.green(`Continue setting the environment variables in the ${chalk.blue(".env")} file`)}`,
     ERROR_HANDLER: (message) => `${chalk.black.bgRedBright(message)}`,
+    ERROR_INTERFACE: (path) => `${EMOJIS.NO_ENTRY} Path ${chalk.blue(path)} does not correspond to models, service the infra.`
 }
