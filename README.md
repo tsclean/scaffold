@@ -58,7 +58,7 @@ the tasks.
 
 ## Model Generation
 
-1. The **`scaffold create:entity`** command will generate a model and an interface in the **`domain layer [models]`**, this task has **`--name`** as parameter and this is required.
+1. The **`scaffold create:entity`** command will generate a model in the **`domain layer [models]`**, this task has **`--name`** as parameter and this is required.
    The name must have a middle hyphen in case it is compound.
 
    Example: **`--name=user, --name=user-detail, --name=post-comments-user.`**

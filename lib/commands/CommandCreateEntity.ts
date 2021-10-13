@@ -1,9 +1,8 @@
-import chalk from 'chalk'
+import ora from "ora";
 import * as yargs from 'yargs'
 import {CommandUtils} from './CommandUtils'
 import {banner, errorMessage} from "../utils/helpers";
 import {MESSAGES} from "../utils/messages";
-import ora from "ora";
 import {EMOJIS} from "../utils/emojis";
 
 
@@ -19,17 +18,15 @@ export class EntityCreateCommand implements yargs.CommandModule {
                 demand: true
             })
     }
-    
+
     async handler(args: yargs.Arguments) {
         let spinner
         try {
 
             const fileContent = EntityCreateCommand.getTemplate(args.name as any)
-            const fileContentRepository = EntityCreateCommand.getTemplateRepository(args.name as any)
             const basePath = `${process.cwd()}/src/domain/models/`
             const filename = `${args.name}.ts`
-            const path = basePath +  filename
-            const pathRepository = `${basePath}gateways/${args.name}-repository.ts`
+            const path = basePath + filename
             const fileExists = await CommandUtils.fileExists(path)
 
             banner()
@@ -38,14 +35,12 @@ export class EntityCreateCommand implements yargs.CommandModule {
 
             if (fileExists) throw MESSAGES.FILE_EXISTS(path)
 
-            await CommandUtils.createFile(pathRepository, fileContentRepository)
             await CommandUtils.createFile(path, fileContent)
 
             setTimeout(() => {
                 spinner.succeed("Installation completed")
                 spinner.stopAndPersist({
                     symbol: EMOJIS.ROCKET,
-                    prefixText: MESSAGES.REPOSITORY_SUCCESS(pathRepository),
                     text: MESSAGES.FILE_SUCCESS('Entity', path)
                 });
             }, 1000 * 5);
@@ -53,12 +48,12 @@ export class EntityCreateCommand implements yargs.CommandModule {
             setTimeout(() => (spinner.fail("Installation fail"), errorMessage(error, 'entity')), 2000)
         }
     }
-    
+
     /**
      * Gets content of the entity file
-     * 
+     *
      * @param param
-     * @returns 
+     * @returns
      */
     protected static getTemplate(param: string): string {
         const name = CommandUtils.capitalizeString(param)
@@ -68,17 +63,5 @@ export class EntityCreateCommand implements yargs.CommandModule {
 
 export type Add${name}Params = Omit<${name}Model, 'id'>
 `
-    }
-
-    /**
-     * Get content repository file
-     * @param param
-     * @protected
-     */
-    protected static getTemplateRepository(param: string) {
-        const name = CommandUtils.capitalizeString(param)
-        return `export interface I${name}Repository {
-    
-}`;
     }
 }
