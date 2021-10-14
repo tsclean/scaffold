@@ -192,6 +192,7 @@ dist
 
         packageJsonContent.dependencies["@tsclean/core"] = "^1.0.1"
         packageJsonContent.dependencies["dotenv"] = "^10.0.0"
+        packageJsonContent.dependencies["helmet"] = "^4.6.0"
         packageJsonContent.dependencies["module-alias"] = "^2.2.2"
 
         packageJsonContent.scripts["start"] = "node ./dist/index.js"
@@ -234,6 +235,8 @@ PORT=9000`
 
     static getIndexTemplate() {
         return `import "module-alias/register";
+
+import helmet from 'helmet';
 import {StartProjectServer} from "@tsclean/core";
         
 import {AppContainer} from "@/application/app";
@@ -241,6 +244,7 @@ import {PORT} from "@/application/config/environment";
     
 async function init() {
     const app = await StartProjectServer.create(AppContainer)
+    app.use(helmet());
     await app.listen(PORT, () => console.log('Running on port ' + PORT))
 }
    

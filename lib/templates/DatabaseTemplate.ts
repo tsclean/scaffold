@@ -84,6 +84,8 @@ export const PostgresHelper = {
      */
     static getTemplateServerMongo() {
         return `import 'module-alias/register'
+        
+import helmet from 'helmet';
 import {StartProjectServer} from "@tsclean/core";
 
 import { AppContainer } from '@/application/app';
@@ -93,8 +95,9 @@ import { MongoHelper } from '@/infrastructure/driven-adapters/adapters/mongo-ada
 MongoHelper.connect(MONGODB_URI)
     .then(async () => {
         console.log('Connected DB')
-        const app = await StartProjectServer.create(AppContainer)
-        await app.listen(PORT, () => console.log('Running on port ' + PORT))
+        const app = await StartProjectServer.create(AppContainer);
+        app.use(helmet());
+        await app.listen(PORT, () => console.log('Running on port ' + PORT));
     .catch(error => console.log(error))
 })
 `
@@ -104,7 +107,9 @@ MongoHelper.connect(MONGODB_URI)
      * Get content configuration for mysql in server.ts file
      */
     static getTemplateServerMysql() {
-        return `import 'module-alias/register'
+        return `import 'module-alias/register';
+        
+import helmet from 'helmet';
 import {StartProjectServer} from "@tsclean/core";
 
 import {AppContainer} from "@/application/app";
@@ -113,7 +118,8 @@ import {MysqlHelper} from "@/infrastructure/driven-adapters/adapters/mysql-adapt
 
 MysqlHelper.connect()
     .then(async () => {
-        const app = await StartProjectServer.create(AppContainer)
+        const app = await StartProjectServer.create(AppContainer);
+        app.use(helmet());
         await app.listen(PORT, () => console.log('Running on port ' + PORT))})
     .catch(err => console.log(err))
 `
@@ -124,6 +130,8 @@ MysqlHelper.connect()
      */
     static getTemplateServerPostgres() {
         return `import 'module-alias/register'
+        
+import helmet from 'helmet';
 import {StartProjectServer} from "@tsclean/core";
 
 import {AppContainer} from "@/application/app";
@@ -132,7 +140,8 @@ import {PostgresHelper} from "@/infrastructure/driven-adapters/adapters/postgres
 
 PostgresHelper.connect()
     .then(async () => {
-        const app = await StartProjectServer.create(AppContainer)
+        const app = await StartProjectServer.create(AppContainer);
+        app.use(helmet());
         await app.listen(PORT, () => console.log('Running on port ' + PORT))})})
     .catch(err => console.log(err))
 `
