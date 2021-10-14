@@ -36,39 +36,39 @@ export class InterfaceCreateCommand implements yargs.CommandModule {
             const fileContent = InterfaceCreateCommand.getTemplateInterface(args.name as any, args.path as any)
             banner()
 
-            setTimeout(() => (spinner = ora('Installing...').start()), 1000)
+            setTimeout(() => (spinner = ora('Installing...').start()), 1000);
 
-            if(args.path != "models" || args.path != "service" || args.path != "infra") {
+            if(args.path as string === "models" || args.path as string === "service" || args.path as string === "infra") {
+                switch (args.path) {
+                    case "models":
+                        basePath = `${process.cwd()}/src/domain/models/gateways`
+                        fileName = `${args.name}-repository.ts`
+                        break
+                    case "service":
+                        basePath = `${process.cwd()}/src/domain/use-cases`
+                        fileName = `${args.name}-service.ts`
+                        break
+                    case "infra":
+                        basePath = `${process.cwd()}/src/infrastructure/entry-points/gateways`
+                        fileName = `${args.name}.ts`
+                        break
+                }
+
+                path = `${basePath}/${fileName}`
+                fileExists = await CommandUtils.fileExists(path)
+                if (fileExists) throw MESSAGES.FILE_EXISTS(path)
+
+                await CommandUtils.createFile(path, fileContent)
+                setTimeout(() => {
+                    spinner.succeed("Installation completed")
+                    spinner.stopAndPersist({
+                        symbol: EMOJIS.ROCKET,
+                        text: MESSAGES.FILE_SUCCESS('Interface', path)
+                    });
+                }, 1000 * 5);
+            } else {
                 throw MESSAGES.ERROR_INTERFACE(args.path);
             }
-
-            switch (args.path) {
-                case "models":
-                    basePath = `${process.cwd()}/src/domain/models/gateways`
-                    fileName = `${args.name}-repository.ts`
-                    break
-                case "service":
-                    basePath = `${process.cwd()}/src/domain/use-cases`
-                    fileName = `${args.name}-service.ts`
-                    break
-                case "infra":
-                    basePath = `${process.cwd()}/src/infrastructure/entry-points/gateways`
-                    fileName = `${args.name}.ts`
-                    break
-            }
-
-            path = `${basePath}/${fileName}`
-            fileExists = await CommandUtils.fileExists(path)
-            if (fileExists) throw MESSAGES.FILE_EXISTS(path)
-
-            await CommandUtils.createFile(path, fileContent)
-            setTimeout(() => {
-                spinner.succeed("Installation completed")
-                spinner.stopAndPersist({
-                    symbol: EMOJIS.ROCKET,
-                    text: MESSAGES.FILE_SUCCESS('Interface', path)
-                });
-            }, 1000 * 5);
         } catch (error) {
             setTimeout(() => (spinner.fail("Installation fail"), errorMessage(error, 'interface')), 2000)
         }

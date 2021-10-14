@@ -28,10 +28,10 @@ export class AdapterCreateCommand implements yargs.CommandModule {
         let spinner
 
         try {
-            const directoryImplementation = `${process.cwd()}/src/domain/models/gateways`;
-            const files = await CommandUtils.injectServiceAdapter(directoryImplementation);
 
-            if (files === undefined) throw MESSAGES.ERROR_HANDLER('The interface to connect the domain layer with the infrastructure layer has not been created.')
+            banner()
+
+            setTimeout(async () => spinner = ora('Installing...').start(),1000)
 
             const basePath = `${process.cwd()}/src/infrastructure/driven-adapters/mongo-adapter/`;
             const filename = `${args.name}-mongo-repository-adapter.ts`;
@@ -39,31 +39,31 @@ export class AdapterCreateCommand implements yargs.CommandModule {
 
             const fileExists = await CommandUtils.fileExists(path);
 
-            banner()
-
-            setTimeout(async () => spinner = ora('Installing...').start(),1000)
-
-            if (fileExists) throw MESSAGES.FILE_EXISTS(path)
+            if (fileExists) throw MESSAGES.FILE_EXISTS(path);
 
             const database: string = args.database as any
             const base = process.cwd()
 
-            // Adapter
-            await CommandUtils.createFile(`${base}/src/infrastructure/driven-adapters/adapters/mongo-adapter/${args.name}-mongo-repository-adapter.ts`, AdapterCreateCommand.getMongoRepositoryAdapter(args.name as string, files as any))
+            if(args.database === 'mongo' || args.database === 'postgres' || args.database === 'mysql') {
+                // Adapter
+                await CommandUtils.createFile(`${base}/src/infrastructure/driven-adapters/adapters/mongo-adapter/${args.name}-mongo-repository-adapter.ts`, AdapterCreateCommand.getMongoRepositoryAdapter(args.name as string))
 
-            // Provider
-            await CommandUtils.createFile(`${base}/src/infrastructure/driven-adapters/providers/${args.database}-providers.ts`, AdapterCreateCommand.generateProvider(database, args.name as string))
+                // Provider
+                await CommandUtils.createFile(`${base}/src/infrastructure/driven-adapters/providers/${args.database}-providers.ts`, AdapterCreateCommand.generateProvider(database, args.name as string))
 
-            const pathAdapter = `${base}/src/infrastructure/driven-adapters/providers/${args.database}-providers.ts`;
+                const pathAdapter = `${base}/src/infrastructure/driven-adapters/providers/${args.database}-providers.ts`;
 
-            setTimeout(() => {
-                spinner.succeed("Installation completed")
-                spinner.stopAndPersist({
-                    symbol: EMOJIS.ROCKET,
-                    prefixText: MESSAGES.PROVIDER_SUCCESS(pathAdapter),
-                    text: MESSAGES.FILE_SUCCESS('Adapter', path)
-                });
-            }, 1000 * 5);
+                setTimeout(() => {
+                    spinner.succeed("Installation completed")
+                    spinner.stopAndPersist({
+                        symbol: EMOJIS.ROCKET,
+                        prefixText: MESSAGES.PROVIDER_SUCCESS(pathAdapter),
+                        text: MESSAGES.FILE_SUCCESS('Adapter', path)
+                    });
+                }, 1000 * 5);
+            } else {
+                throw MESSAGES.ERROR_DATABASE(args.database);
+            }
         } catch (error) {
             errorMessage(error, 'adapter')
         }
@@ -84,40 +84,15 @@ export const ${name}MongoProvider: Provider = {
         }
     }
 
-    protected static getMongoRepositoryAdapter(param: string, files: string[]) {
-        let nameRepository: string = "";
+    protected static getMongoRepositoryAdapter(param: string) {
+        const nameCapitalizeRepository = CommandUtils.capitalizeString(param);
 
-        for (const file of files) {
-            let name = file.slice(0, -14);
-            if (name === param) {
-                nameRepository = name;
-                const nameCapitalizeRepository = CommandUtils.capitalizeString(nameRepository);
-
-                return `import {Injectable} from "@tsclean/core";
-import {I${nameCapitalizeRepository}Repository} from "@/domain/models/gateways/${param}-repository";
+        return `import {Injectable} from "@tsclean/core";
 
 @Injectable()
-export class ${nameCapitalizeRepository}MongoRepositoryAdapter implements I${nameCapitalizeRepository}Repository {
+export class ${nameCapitalizeRepository}MongoRepositoryAdapter {
     // Implementation
 }
 `
-            };
-        }
-    }
-
-    static appendServiceImplementation(param: string | undefined): string | Uint8Array {
-        const name = CommandUtils.capitalizeString(param);
-
-        return `import {Adapter} from "@tsclean/core";
-import {I${name}Service} from "@/domain/use-cases/${param}-service";
-import {I${name}Repository} from "@/domain/models/gateways/${param}-repository";
-
-export class ${name}ServiceImpl implements I${name}Service {
-    constructor(
-        @Adapter('${name}MongoAdapter')
-        private readonly ${param}Repository: I${name}Repository
-    ) {
-    }
-}`
-    }
+    };
 }

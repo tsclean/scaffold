@@ -12,5 +12,6 @@ export const MESSAGES = {
     CONFIG_ENV: () => `${chalk.green(`Continue setting the environment variables in the ${chalk.blue(".env")} file`)}`,
     ERROR_HANDLER: (message) => `${chalk.black.bgRedBright(message)}`,
     ERROR_INTERFACE: (path) => `${EMOJIS.NO_ENTRY} Path ${chalk.blue(path)} does not correspond to models, service the infra.`,
-    ERROR_DATABASE: (manager) => `${EMOJIS.NO_ENTRY} Database manager ${chalk.blue(manager)} does not correspond to mongo, mysql the postgres.`
+    ERROR_DATABASE: (manager) => `${EMOJIS.NO_ENTRY} Database manager ${chalk.blue(manager)} does not correspond to mongo, mysql the postgres.`,
+    MESSAGE_ERROR_HANDLER: `${chalk.white('The interface to connect the domain layer with the infrastructure layer has not been created.')}`
 }

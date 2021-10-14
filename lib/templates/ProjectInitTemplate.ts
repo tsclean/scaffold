@@ -96,6 +96,7 @@ export class AppContainer {}
         return JSON.stringify({
             "compilerOptions": {
                 "experimentalDecorators": true,
+                "emitDecoratorMetadata": true,
                 "outDir": "./dist",
                 "module": "commonjs",
                 "target": "es2019",

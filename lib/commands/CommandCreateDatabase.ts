@@ -37,23 +37,22 @@ export class DatabaseCreateCommand implements yargs.CommandModule {
             const filename = `${args.database}-helper.ts`
             const path = `${basePath}/${args.database}-adapter/${filename}`
 
-
-
             const fileExists = await CommandUtils.fileExists(path)
             if (fileExists) throw  MESSAGES.FILE_EXISTS(path)
 
-            if(args.database != 'mongo' || args.database != 'postgres' || args.database != 'mysql') {
+            if(args.database === 'mongo' || args.database === 'postgres' || args.database === 'mysql') {
+                switch (database) {
+                    case "mongo":
+                        return await DatabaseCreateCommand.getTemplateToCreateDatabase(base, path, fileContentMongo, database)
+                    case "mysql":
+                        return await DatabaseCreateCommand.getTemplateToCreateDatabase(base, path, fileContentMysql, database)
+                    case "postgres":
+                        return await DatabaseCreateCommand.getTemplateToCreateDatabase(base, path, fileContentPostgres, database)
+                }
+            } else {
                 throw MESSAGES.ERROR_DATABASE(args.database);
             }
 
-            switch (database) {
-                case "mongo":
-                    return await DatabaseCreateCommand.getTemplateToCreateDatabase(base, path, fileContentMongo, database)
-                case "mysql":
-                   return await DatabaseCreateCommand.getTemplateToCreateDatabase(base, path, fileContentMysql, database)
-                case "postgres":
-                    return await DatabaseCreateCommand.getTemplateToCreateDatabase(base, path, fileContentPostgres, database)
-            }
         } catch (error) {
             errorMessage(error, 'database')
         }
