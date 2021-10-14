@@ -33,8 +33,8 @@ export class AdapterCreateCommand implements yargs.CommandModule {
 
             setTimeout(async () => spinner = ora('Installing...').start(),1000)
 
-            const basePath = `${process.cwd()}/src/infrastructure/driven-adapters/mongo-adapter/`;
-            const filename = `${args.name}-mongo-repository-adapter.ts`;
+            const basePath = `${process.cwd()}/src/infrastructure/driven-adapters/adapters/${args.database}-adapter/`;
+            const filename = `${args.name}-${args.database}-repository-adapter.ts`;
             const path = `${basePath}${filename}`;
 
             const fileExists = await CommandUtils.fileExists(path);
@@ -46,10 +46,10 @@ export class AdapterCreateCommand implements yargs.CommandModule {
 
             if(args.database === 'mongo' || args.database === 'postgres' || args.database === 'mysql') {
                 // Adapter
-                await CommandUtils.createFile(`${base}/src/infrastructure/driven-adapters/adapters/mongo-adapter/${args.name}-mongo-repository-adapter.ts`, AdapterCreateCommand.getMongoRepositoryAdapter(args.name as string))
+                await CommandUtils.createFile(`${base}/src/infrastructure/driven-adapters/adapters/${args.database}-adapter/${args.name}-${args.database}-repository-adapter.ts`, AdapterCreateCommand.getMongoRepositoryAdapter(args.name as string, database))
 
                 // Provider
-                await CommandUtils.createFile(`${base}/src/infrastructure/driven-adapters/providers/${args.database}-providers.ts`, AdapterCreateCommand.generateProvider(database, args.name as string))
+                await CommandUtils.createFile(`${base}/src/infrastructure/driven-adapters/providers/${args.database}-providers.ts`, AdapterCreateCommand.generateProvider(database as string, args.name as string))
 
                 const pathAdapter = `${base}/src/infrastructure/driven-adapters/providers/${args.database}-providers.ts`;
 
@@ -81,16 +81,35 @@ export const ${name}MongoProvider: Provider = {
     useClass: ${name}MongoRepositoryAdapter,
 };
         `
+            case "mysql":
+                return `import {Provider} from "@tsclean/core";
+import {${name}MysqlRepositoryAdapter} from "@/infrastructure/driven-adapters/adapters/mysql-adapter/${param}-mysql-repository-adapter";
+
+export const ${name}MysqlProvider: Provider = {
+    provide: '${name}MysqlAdapter',
+    useClass: ${name}MysqlRepositoryAdapter,
+};
+        `
+            case "postgres":
+                return `import {Provider} from "@tsclean/core";
+import {${name}PostgresRepositoryAdapter} from "@/infrastructure/driven-adapters/adapters/postgres-adapter/${param}-postgres-repository-adapter";
+
+export const ${name}PostgresProvider: Provider = {
+    provide: '${name}PostgresAdapter',
+    useClass: ${name}PostgresRepositoryAdapter,
+};
+        `
         }
     }
 
-    protected static getMongoRepositoryAdapter(param: string) {
+    protected static getMongoRepositoryAdapter(param: string, db: string) {
         const nameCapitalizeRepository = CommandUtils.capitalizeString(param);
+        const nameCapitalizeAdapter = CommandUtils.capitalizeString(db);
 
         return `import {Injectable} from "@tsclean/core";
 
 @Injectable()
-export class ${nameCapitalizeRepository}MongoRepositoryAdapter {
+export class ${nameCapitalizeRepository}${nameCapitalizeAdapter}RepositoryAdapter {
     // Implementation
 }
 `

@@ -22,7 +22,7 @@ export class CommandUtils {
      * @param override
      * @returns
      */
-    static async createFile(filePath: string, content: string | Uint8Array, override: boolean = true): Promise<void> {
+    static async createFile(filePath: string, content: string, override: boolean = true): Promise<void> {
         await CommandUtils.createDirectories(path.dirname(filePath))
         return new Promise<void>((resolve, reject) => {
             if (override === false && fs.existsSync(filePath))
