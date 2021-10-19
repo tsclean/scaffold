@@ -145,17 +145,17 @@ export class ${_name}${_orm}Provider {
         const _param = CommandUtils.capitalizeString(param);
         const _orm = CommandUtils.capitalizeString(orm);
 
-        if (manager === CONSTANTS.MYSQL || manager === CONSTANTS.POSTGRES) {
-            switch (orm) {
-                case CONSTANTS.MONGOOSE:
-                    return `import {${_param}Model} from "@/domain/models/${param}";
+        switch (orm) {
+            case CONSTANTS.MONGOOSE:
+                return `import {${_param}Model} from "@/domain/models/${param}";
 import {${_param}ModelSchema} from "@/infrastructure/driven-adapters/adapters/orm/${orm}/models/${param}";
 
 export class ${_param}${_orm}RepositoryAdapter {
     // Implementation
 }
 `
-                case CONSTANTS.SEQUELIZE:
+            case CONSTANTS.SEQUELIZE:
+                if (manager === CONSTANTS.MYSQL || manager === CONSTANTS.POSTGRES) {
                     const _manager = CommandUtils.capitalizeString(manager);
                     return `import {${_param}Model} from "@/domain/models/${param}";
 import {${_param}Model${_manager}}from "@/infrastructure/driven-adapters/adapters/orm/${orm}/models/${param}";
@@ -164,10 +164,11 @@ export class ${_param}${_manager}RepositoryAdapter {
     // Implementation
 }
 `
-            }
-        } else {
-            throw MESSAGES.ERROR_DATABASE(manager);
+                } else {
+                    throw MESSAGES.ERROR_DATABASE(manager);
+                }
         }
+
     };
 
     /**
