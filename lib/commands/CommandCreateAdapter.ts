@@ -57,8 +57,8 @@ export class AdapterCreateCommand implements yargs.CommandModule {
             await CommandUtils.readModelFiles(PATHS.PATH_MODELS_ENTITY(), args.name as string);
 
             if (args.orm === CONSTANTS.MONGOOSE || args.orm === CONSTANTS.SEQUELIZE) {
-                await CommandUtils.deleteFile(base + "/src/index.ts");
-                await CommandUtils.createFile(base + "/src/index.ts", AdapterCreateCommand.getTemplateServer(args.name as string, args.orm, args.manager as string));
+                await CommandUtils.deleteFile(PATHS.PATH_INDEX(base));
+                await CommandUtils.createFile(PATHS.PATH_INDEX(base), AdapterCreateCommand.getTemplateServer(args.name as string, args.orm, args.manager as string));
                 // Adapter
                 await CommandUtils.createFile(PATHS.PATH_ADAPTER(base, args.orm, args.name, args.manager), AdapterCreateCommand.getRepositoryAdapter(args.name as string, args.orm as string, args.manager as string))
                 // Provider

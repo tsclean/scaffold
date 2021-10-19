@@ -82,6 +82,12 @@ export class ${nameCapitalizeService}Controller {
         private readonly ${transformString}Service: ${nameCapitalizeService}ServiceImpl
     ) {
     }
+    
+    // Example funcion
+    @Get()
+    async function getWelcome(): Promise<any> {
+        return 'Welcome to the world of clean architecture'
+    }
 }
 `
             };

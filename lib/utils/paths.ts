@@ -1,4 +1,5 @@
 export const PATHS = {
+    PATH_INDEX: (base) => `${base}/src/index.ts`,
     PATH_MODELS_ENTITY: () => `${process.cwd()}/src/domain/models/`,
     BASE_PATH_ADAPTER: (orm) => `${process.cwd()}/src/infrastructure/driven-adapters/adapters/orm/${orm}/`,
     FILE_NAME_ADAPTER: (name, manager, orm) => manager ? `${name}-${manager}-repository-adapter.ts` : `${name}-${orm}-repository-adapter.ts`,
