@@ -122,7 +122,7 @@ export class DatabaseCreateCommand implements yargs.CommandModule {
 
         await DatabaseCreateCommand.executeCommand("npm install", path, base)
 
-        console.log(` ${EMOJIS.ROCKET} ${MESSAGES.CONFIG_ENV()}`)
+        console.log(`${EMOJIS.ROCKET} ${MESSAGES.CONFIG_ENV()}`)
     }
 
     /**

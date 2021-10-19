@@ -1,13 +1,15 @@
 import ora from "ora";
 import yargs from "yargs";
 
+import {PATHS} from "../utils/paths";
 import {EMOJIS} from "../utils/emojis";
 import {MESSAGES} from "../utils/messages";
 import {CommandUtils} from "./CommandUtils";
-import {banner, errorMessage} from "../utils/helpers";
+import {CONSTANTS} from "../utils/constants";
+import {banner, errorMessage, executeCommand} from "../utils/helpers";
 
 export class AdapterCreateCommand implements yargs.CommandModule {
-    command = "create:adapter";
+    command = "create:adapter-orm";
     describe = "Generate a new adapter";
 
     builder(args: yargs.Argv) {
@@ -17,11 +19,15 @@ export class AdapterCreateCommand implements yargs.CommandModule {
                 describe: "Name the adapter",
                 demandOption: true
             })
-            .option("database", {
-                alias: "db",
-                describe: "Database manager",
+            .option("orm", {
+                alias: "orm",
+                describe: "Orm",
                 demandOption: true
-            });
+            })
+            .option("manager", {
+                alias: "mn",
+                describe: "Database manager"
+            })
     }
 
     async handler(args: yargs.Arguments) {
@@ -31,87 +37,205 @@ export class AdapterCreateCommand implements yargs.CommandModule {
 
             banner()
 
-            setTimeout(async () => spinner = ora('Installing...').start(),1000)
+            setTimeout(async () => spinner = ora(CONSTANTS.INSTALLING).start(), 1000)
 
-            const basePath = `${process.cwd()}/src/infrastructure/driven-adapters/adapters/${args.database}-adapter/`;
-            const filename = `${args.name}-${args.database}-repository-adapter.ts`;
+            const basePath = PATHS.BASE_PATH_ADAPTER(args.orm);
+            const filename = PATHS.FILE_NAME_ADAPTER(args.name, args.manager, args.orm);
+
+            // The path for the validation of the file input is made up.
             const path = `${basePath}${filename}`;
 
+            // We validate if the file exists, to throw the exception.
             const fileExists = await CommandUtils.fileExists(path);
 
+            // Throw message exception
             if (fileExists) throw MESSAGES.FILE_EXISTS(path);
 
-            const database: string = args.database as any
-            const base = process.cwd()
+            const base = process.cwd();
 
-            if(args.database === 'mongo' || args.database === 'postgres' || args.database === 'mysql') {
+            // Validate that the entity exists for importing into the ORM adapter.
+            await CommandUtils.readModelFiles(PATHS.PATH_MODELS_ENTITY(), args.name as string);
+
+            if (args.orm === CONSTANTS.MONGOOSE || args.orm === CONSTANTS.SEQUELIZE) {
                 // Adapter
-                await CommandUtils.createFile(`${base}/src/infrastructure/driven-adapters/adapters/${args.database}-adapter/${args.name}-${args.database}-repository-adapter.ts`, AdapterCreateCommand.getMongoRepositoryAdapter(args.name as string, database))
-
+                await CommandUtils.createFile(PATHS.PATH_ADAPTER(base, args.orm, args.name, args.manager), AdapterCreateCommand.getRepositoryAdapter(args.name as string, args.orm as string, args.manager as string))
                 // Provider
-                await CommandUtils.createFile(`${base}/src/infrastructure/driven-adapters/providers/${args.database}-providers.ts`, AdapterCreateCommand.generateProvider(database as string, args.name as string))
+                await CommandUtils.createFile(PATHS.PATH_PROVIDER(base, args.orm, args.name, args.manager), AdapterCreateCommand.generateProvider(args.name as string, args.orm as string, args.manager as string))
+                // Model
+                await CommandUtils.createFile(PATHS.PATH_MODEL(base, args.orm, args.name), AdapterCreateCommand.getModels(args.name as string, args.orm as string, args.manager as string));
+                // Dependencies
+                const packageJsonContents = await CommandUtils.readFile(base + "/package.json");
+                await CommandUtils.createFile(base + "/package.json", AdapterCreateCommand.getPackageJson(packageJsonContents, args.orm as string, args.manager as string));
+                await executeCommand(CONSTANTS.NPM_INSTALL)
 
-                const pathAdapter = `${base}/src/infrastructure/driven-adapters/providers/${args.database}-providers.ts`;
+                // This message is only displayed in sequelize
+                const env = args.manager ? `${EMOJIS.ROCKET} ${MESSAGES.CONFIG_ENV()}` : "";
+
+                const pathAdapter = args.manager
+                    ? PATHS.PATH_PROVIDER_SEQUELIZE(base, args.orm, args.name, args.manager)
+                    : PATHS.PATH_PROVIDER_MONGOOSE(base, args.orm, args.name);
 
                 setTimeout(() => {
-                    spinner.succeed("Installation completed")
+                    spinner.succeed(CONSTANTS.INSTALLATION_COMPLETED)
                     spinner.stopAndPersist({
                         symbol: EMOJIS.ROCKET,
                         prefixText: MESSAGES.PROVIDER_SUCCESS(pathAdapter),
-                        text: MESSAGES.FILE_SUCCESS('Adapter', path)
+                        text: `${MESSAGES.FILE_SUCCESS(CONSTANTS.ADAPTER, path)}
+${env}`
                     });
                 }, 1000 * 5);
             } else {
-                throw MESSAGES.ERROR_DATABASE(args.database);
+                throw MESSAGES.ERROR_ORM(args.orm);
             }
         } catch (error) {
-            errorMessage(error, 'adapter')
+            errorMessage(error, CONSTANTS.ADAPTER)
         }
     }
 
-    protected static generateProvider(database: string, param: string) {
-        const name = CommandUtils.capitalizeString(param);
-        switch (database) {
-            case "mongo":
-                return `import {Provider} from "@tsclean/core";
-import {${name}MongoRepositoryAdapter} from "@/infrastructure/driven-adapters/adapters/mongo-adapter/${param}-mongo-repository-adapter";
+    /**
+     *
+     * @param manager
+     * @param param
+     * @param orm
+     * @protected
+     */
+    protected static generateProvider(param: string, orm: string, manager?: string) {
+        const _name = CommandUtils.capitalizeString(param);
+        const _orm = CommandUtils.capitalizeString(orm);
 
-export const ${name}MongoProvider: Provider = {
-    provide: '${name}MongoAdapter',
-    useClass: ${name}MongoRepositoryAdapter,
-};
+        switch (orm) {
+            case CONSTANTS.SEQUELIZE:
+                const _manager = CommandUtils.capitalizeString(manager);
+                return `import {Provider} from "@tsclean/core";
+import {${_name}${_manager}RepositoryAdapter} from "@/infrastructure/driven-adapters/adapters/orm/${orm}/${param}-${manager}-repository-adapter";
+
+export class ${_name}${_manager}Provider {
+    static getProvider(): Provider {
+        return {
+            key: '${_name}${_manager}Adapter',
+            classAdapter: ${_name}${_manager}RepositoryAdapter,
+        }
+    }
+}
         `
-            case "mysql":
+            case CONSTANTS.MONGOOSE:
                 return `import {Provider} from "@tsclean/core";
-import {${name}MysqlRepositoryAdapter} from "@/infrastructure/driven-adapters/adapters/mysql-adapter/${param}-mysql-repository-adapter";
+import {${_name}${_orm}RepositoryAdapter} from "@/infrastructure/driven-adapters/adapters/orm/${orm}/${param}-${orm}-repository-adapter";
 
-export const ${name}MysqlProvider: Provider = {
-    provide: '${name}MysqlAdapter',
-    useClass: ${name}MysqlRepositoryAdapter,
-};
-        `
-            case "postgres":
-                return `import {Provider} from "@tsclean/core";
-import {${name}PostgresRepositoryAdapter} from "@/infrastructure/driven-adapters/adapters/postgres-adapter/${param}-postgres-repository-adapter";
-
-export const ${name}PostgresProvider: Provider = {
-    provide: '${name}PostgresAdapter',
-    useClass: ${name}PostgresRepositoryAdapter,
-};
+export class ${_name}${_orm}Provider {
+    static getProvider(): Provider {
+        return {
+            key: '${_name}${_orm}Adapter',
+            classAdapter: ${_name}${_orm}RepositoryAdapter,
+        }
+    }
+}
         `
         }
     }
 
-    protected static getMongoRepositoryAdapter(param: string, db: string) {
-        const nameCapitalizeRepository = CommandUtils.capitalizeString(param);
-        const nameCapitalizeAdapter = CommandUtils.capitalizeString(db);
+    /**
+     *
+     * @param param
+     * @param orm
+     * @param manager
+     * @protected
+     */
+    protected static getRepositoryAdapter(param: string, orm: string, manager?: string) {
+        const _param = CommandUtils.capitalizeString(param);
+        const _orm = CommandUtils.capitalizeString(orm);
 
-        return `import {Injectable} from "@tsclean/core";
+        if (manager === CONSTANTS.MYSQL || manager === CONSTANTS.POSTGRES) {
+            switch (orm) {
+                case CONSTANTS.MONGOOSE:
+                    return `import {${_param}Model} from "@/domain/models/${param}";
+import {${_param}ModelSchema} from "@/infrastructure/driven-adapters/adapters/orm/${orm}/models/${param}";
 
-@Injectable()
-export class ${nameCapitalizeRepository}${nameCapitalizeAdapter}RepositoryAdapter {
+export class ${_param}${_orm}RepositoryAdapter {
     // Implementation
 }
 `
+                case CONSTANTS.SEQUELIZE:
+                    const _manager = CommandUtils.capitalizeString(manager);
+                    return `import {${_param}Model} from "@/domain/models/${param}";
+import {${_param}Model${_manager}}from "@/infrastructure/driven-adapters/adapters/orm/${orm}/models/${param}";
+
+export class ${_param}${_manager}RepositoryAdapter {
+    // Implementation
+}
+`
+            }
+        } else {
+            throw MESSAGES.ERROR_DATABASE(manager);
+        }
     };
+
+    /**
+     *
+     * @param param
+     * @param orm
+     * @param manager
+     * @protected
+     */
+    protected static getModels(param: string, orm: string, manager?: string) {
+        const _name = CommandUtils.capitalizeString(param);
+
+        switch (orm) {
+            case CONSTANTS.MONGOOSE:
+                return `import { ${_name}Model } from '@/domain/models/${param}';
+import { model, Schema } from "mongoose";
+
+const schema = new Schema<${_name}Model>({
+    // Implementation
+});
+
+export const ${_name}ModelSchema = model<${_name}Model>('${param}s', schema);
+`;
+            case CONSTANTS.SEQUELIZE:
+                const _manager = CommandUtils.capitalizeString(manager);
+                return `import { Table, Column, Model, Sequelize } from 'sequelize-typescript'
+import { ${_name}Model } from "@/domain/models/${param}";
+
+@Table({ tableName: '${param}s' })
+export class ${_name}Model${_manager} extends Model<${_name}Model> {
+    // Implementation
+}`
+        }
+    }
+
+    /**
+     *
+     * @param dependencies
+     * @param orm
+     * @param manager
+     * @private
+     */
+    private static getPackageJson(dependencies: string, orm: string, manager: string) {
+        const updatePackages = JSON.parse(dependencies);
+
+        switch (orm) {
+            case CONSTANTS.MONGOOSE:
+                updatePackages.dependencies["mongoose"] = "^6.0.10";
+                updatePackages.devDependencies["@types/mongoose"] = "^5.11.97";
+                break;
+            case CONSTANTS.SEQUELIZE:
+                updatePackages.dependencies["sequelize"] = "^6.7.0"
+                updatePackages.dependencies["sequelize-typescript"] = "^2.1.1"
+                updatePackages.devDependencies["@types/sequelize"] = "^4.28.10"
+                switch (manager) {
+                    case CONSTANTS.MYSQL:
+                        updatePackages.dependencies["mysql2"] = "^2.3.1"
+                        break
+                    case CONSTANTS.POSTGRES:
+                        updatePackages.dependencies["pg"] = "^8.7.1"
+                        updatePackages.dependencies["pg-hstore"] = "^2.3.4"
+                        break
+                    default:
+                        break;
+                }
+
+        }
+
+        return JSON.stringify(updatePackages, undefined, 3)
+    }
 }

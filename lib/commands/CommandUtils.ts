@@ -1,6 +1,7 @@
 import * as fs from 'fs'
 import * as path from 'path'
 import mkdirp from 'mkdirp'
+import {MESSAGES} from "../utils/messages";
 
 export class CommandUtils {
 
@@ -89,5 +90,30 @@ export class CommandUtils {
                 resolve(files);
             });
         })
+    }
+
+    /**
+     *
+     * @param directory
+     * @param name
+     */
+    static readModelFiles(directory: string, name: string): Promise<string[]> {
+        return new Promise((resolve, reject) => {
+            fs.readdir(directory, function (error, files: string[]) {
+                let fileExist: boolean;
+                for (const file of files) {
+                    const _name = file.slice(0, -3);
+                    fileExist = _name === name;
+                    resolve(files);
+                }
+
+                if (!fileExist) {
+                    console.log(MESSAGES.ERROR_MODEL(name));
+                    process.exit(1);
+                }
+            });
+        })
+
+
     }
 }
