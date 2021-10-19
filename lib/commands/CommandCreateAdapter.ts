@@ -57,6 +57,8 @@ export class AdapterCreateCommand implements yargs.CommandModule {
             await CommandUtils.readModelFiles(PATHS.PATH_MODELS_ENTITY(), args.name as string);
 
             if (args.orm === CONSTANTS.MONGOOSE || args.orm === CONSTANTS.SEQUELIZE) {
+                await CommandUtils.deleteFile(base + "/src/index.ts");
+                await CommandUtils.createFile(base + "/src/index.ts", AdapterCreateCommand.getTemplateServer(args.name as string, args.orm, args.manager as string));
                 // Adapter
                 await CommandUtils.createFile(PATHS.PATH_ADAPTER(base, args.orm, args.name, args.manager), AdapterCreateCommand.getRepositoryAdapter(args.name as string, args.orm as string, args.manager as string))
                 // Provider
@@ -238,5 +240,65 @@ export class ${_name}Model${_manager} extends Model<${_name}Model> {
         }
 
         return JSON.stringify(updatePackages, undefined, 3)
+    }
+
+    private static getTemplateServer(name: string, orm: string, manager?: string) {
+        const _name = CommandUtils.capitalizeString(name);
+
+        switch (orm) {
+            case CONSTANTS.SEQUELIZE:
+                const _manager = CommandUtils.capitalizeString(manager);
+                switch (manager) {
+                    case CONSTANTS.MYSQL:
+                        return `import "module-alias/register";
+
+import helmet from 'helmet';
+
+import { Dialect } from 'sequelize/types';
+import { Sequelize } from 'sequelize-typescript';
+
+import {StartProjectServer} from "@tsclean/core";
+        
+import {AppContainer} from "@/application/app";
+import {PORT, CONFIG_MYSQL} from "@/application/config/environment";
+import {${_name}Model${_manager}} from "@/infrastructure/driven-adapters/adapters/orm/sequelize/models/${name}";
+    
+const sequelize = new Sequelize(CONFIG_MYSQL.database, CONFIG_MYSQL.user, CONFIG_MYSQL.password, {
+    dialect: 'mysql',
+    models: [${_name}Model${_manager}],
+});
+
+async function init() {
+    await sequelize.authenticate()
+    console.log("DB mysql")
+    const app = await StartProjectServer.create(AppContainer)
+    app.use(helmet());
+    await app.listen(PORT, () => console.log('Running on port ' + PORT))
+}
+   
+init();`
+                }
+                break
+            case CONSTANTS.MONGOOSE:
+                return `import 'module-alias/register'
+
+import helmet from 'helmet';
+import { connect } from 'mongoose';
+import { StartProjectServer } from "@tsclean/core";
+
+import { AppContainer } from "@/application/app";
+import {MONGODB_URI, PORT} from "@/application/config/environment";
+
+async function run(): Promise<void> {
+  await connect(MONGODB_URI);
+  console.log('DB Mongo connected')
+  const app = await StartProjectServer.create(AppContainer);
+   app.use(helmet());
+   await app.listen(PORT, () => console.log('Running on port: ' + PORT))
+}
+
+run();
+`
+        }
     }
 }
