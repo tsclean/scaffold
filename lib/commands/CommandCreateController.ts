@@ -72,7 +72,7 @@ export class ControllerCreateCommand implements yargs.CommandModule {
                 const nameCapitalizeService = CommandUtils.capitalizeString(nameService);
                 const transformString = CommandUtils.transformInitialString(nameCapitalizeService);
 
-                return `import {Mapping} from "@tsclean/core";
+                return `import {Mapping, Get} from "@tsclean/core";
 import {${nameCapitalizeService}ServiceImpl} from "@/domain/use-cases/impl/${nameService}-service-impl";
 
 @Mapping('api/v1/${nameService}')
@@ -85,7 +85,7 @@ export class ${nameCapitalizeService}Controller {
     
     // Example funcion
     @Get()
-    async function getWelcome(): Promise<any> {
+    async getWelcome(): Promise<any> {
         return 'Welcome to the world of clean architecture'
     }
 }
