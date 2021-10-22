@@ -57,6 +57,7 @@ export class AdapterCreateCommand implements yargs.CommandModule {
             await CommandUtils.readModelFiles(PATHS.PATH_MODELS_ENTITY(), args.name as string);
 
             if (args.orm === CONSTANTS.MONGOOSE || args.orm === CONSTANTS.SEQUELIZE) {
+                console.log(args.orm, args.manager)
                 await CommandUtils.deleteFile(PATHS.PATH_INDEX(base));
                 await CommandUtils.createFile(PATHS.PATH_INDEX(base), AdapterCreateCommand.getTemplateServer(args.name as string, args.orm, args.manager as string));
                 // Adapter
@@ -248,9 +249,10 @@ export class ${_name}Model${_manager} extends Model<${_name}Model> {
         switch (orm) {
             case CONSTANTS.SEQUELIZE:
                 const _manager = CommandUtils.capitalizeString(manager);
-                switch (manager) {
-                    case CONSTANTS.MYSQL:
-                        return `import "module-alias/register";
+                if (manager === CONSTANTS.MYSQL || manager === CONSTANTS.POSTGRES) {
+                    switch (manager) {
+                        case CONSTANTS.MYSQL:
+                            return `import "module-alias/register";
 
 import helmet from 'helmet';
 
@@ -277,6 +279,48 @@ async function init() {
 }
    
 init();`
+                        case CONSTANTS.POSTGRES:
+
+                            return `import "module-alias/register";
+
+import helmet from 'helmet';
+
+import { Dialect } from 'sequelize/types';
+import { Sequelize } from 'sequelize-typescript';
+
+import {StartProjectServer} from "@tsclean/core";
+        
+import {AppContainer} from "@/application/app";
+import {PORT, CONFIG_POSTGRES} from "@/application/config/environment";
+import {${_name}Model${_manager}} from "@/infrastructure/driven-adapters/adapters/orm/sequelize/models/${name}";
+
+const sequelize = new Sequelize(CONFIG_POSTGRES.database, CONFIG_POSTGRES.user, CONFIG_POSTGRES.password, {
+    dialect: 'postgres',
+    models: [${_name}Model${_manager}],
+    define: {
+        timestamps: false
+    },
+    pool: {
+        max: 5,
+        min: 0,
+        acquire: 30000,
+        idle: 10000
+    }
+});
+
+async function init() {
+    await sequelize.authenticate()
+    console.log("DB postgres")
+    const app = await StartProjectServer.create(AppContainer)
+    app.use(helmet());
+    await app.listen(PORT, () => console.log('Running on port ' + PORT))
+}
+   
+init();`
+
+                    }
+                } else {
+                    throw MESSAGES.ERROR_DATABASE(manager);
                 }
                 break
             case CONSTANTS.MONGOOSE:
