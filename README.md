@@ -124,10 +124,5 @@ the tasks.
 | BODY          | @Body()       |
 | PARAMS        | @Param()      |
 
---- 
-
-[Here you can find](https://dev.to/japhernandez/clean-architecture-with-nodejs-typescript-and-mongo-3ene) a use case with
-plugin implementation.
-
 ---
 

@@ -57,13 +57,12 @@ export class AdapterCreateCommand implements yargs.CommandModule {
             await CommandUtils.readModelFiles(PATHS.PATH_MODELS_ENTITY(), args.name as string);
 
             if (args.orm === CONSTANTS.MONGOOSE || args.orm === CONSTANTS.SEQUELIZE) {
-                console.log(args.orm, args.manager)
                 await CommandUtils.deleteFile(PATHS.PATH_INDEX(base));
                 await CommandUtils.createFile(PATHS.PATH_INDEX(base), AdapterCreateCommand.getTemplateServer(args.name as string, args.orm, args.manager as string));
                 // Adapter
                 await CommandUtils.createFile(PATHS.PATH_ADAPTER(base, args.orm, args.name, args.manager), AdapterCreateCommand.getRepositoryAdapter(args.name as string, args.orm as string, args.manager as string))
                 // Provider
-                await CommandUtils.createFile(PATHS.PATH_PROVIDER(base, args.orm, args.name, args.manager), AdapterCreateCommand.generateProvider(args.name as string, args.orm as string, args.manager as string))
+                await CommandUtils.createFile(PATHS.PATH_PROVIDER(base), AdapterCreateCommand.generateProvider())
                 // Model
                 await CommandUtils.createFile(PATHS.PATH_MODEL(base, args.orm, args.name), AdapterCreateCommand.getModels(args.name as string, args.orm as string, args.manager as string));
                 // Dependencies
@@ -97,44 +96,45 @@ ${env}`
 
     /**
      *
-     * @param manager
-     * @param param
-     * @param orm
      * @protected
      */
-    protected static generateProvider(param: string, orm: string, manager?: string) {
-        const _name = CommandUtils.capitalizeString(param);
-        const _orm = CommandUtils.capitalizeString(orm);
+    protected static generateProvider() {
 
-        switch (orm) {
-            case CONSTANTS.SEQUELIZE:
-                const _manager = CommandUtils.capitalizeString(manager);
-                return `import {Provider} from "@tsclean/core";
-import {${_name}${_manager}RepositoryAdapter} from "@/infrastructure/driven-adapters/adapters/orm/${orm}/${param}-${manager}-repository-adapter";
+        return `
+export const adapters = [];
 
-export class ${_name}${_manager}Provider {
-    static getProvider(): Provider {
-        return {
-            key: '${_name}${_manager}Adapter',
-            classAdapter: ${_name}${_manager}RepositoryAdapter,
-        }
-    }
-}
-        `
-            case CONSTANTS.MONGOOSE:
-                return `import {Provider} from "@tsclean/core";
-import {${_name}${_orm}RepositoryAdapter} from "@/infrastructure/driven-adapters/adapters/orm/${orm}/${param}-${orm}-repository-adapter";
+export const services = [];
+        `;
 
-export class ${_name}${_orm}Provider {
-    static getProvider(): Provider {
-        return {
-            key: '${_name}${_orm}Adapter',
-            classAdapter: ${_name}${_orm}RepositoryAdapter,
-        }
-    }
-}
-        `
-        }
+//         switch (orm) {
+//             case CONSTANTS.SEQUELIZE:
+//                 const _manager = CommandUtils.capitalizeString(manager);
+//                 return `import {Provider} from "@tsclean/core";
+// import {${_name}${_manager}RepositoryAdapter} from "@/infrastructure/driven-adapters/adapters/orm/${orm}/${param}-${manager}-repository-adapter";
+//
+// export class ${_name}${_manager}Provider {
+//     static getProvider(): Provider {
+//         return {
+//             key: '${_name}${_manager}Adapter',
+//             classAdapter: ${_name}${_manager}RepositoryAdapter,
+//         }
+//     }
+// }
+//         `
+//             case CONSTANTS.MONGOOSE:
+//                 return `import {Provider} from "@tsclean/core";
+// import {${_name}${_orm}RepositoryAdapter} from "@/infrastructure/driven-adapters/adapters/orm/${orm}/${param}-${orm}-repository-adapter";
+//
+// export class ${_name}${_orm}Provider {
+//     static getProvider(): Provider {
+//         return {
+//             key: '${_name}${_orm}Adapter',
+//             classAdapter: ${_name}${_orm}RepositoryAdapter,
+//         }
+//     }
+// }
+//         `
+//    }
     }
 
     /**

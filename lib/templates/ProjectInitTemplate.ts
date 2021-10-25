@@ -77,11 +77,11 @@ export const CONFIG_POSTGRES = {
      */
     static getAppTemplate(): string {
         return `import {Container} from "@tsclean/core";
+import {controllers} from "@/infrastructure/entry-points/api";
 
 @Container({
-    imports: [],
-    controllers: [],
-    providers: []
+    providers: [],
+    controllers: [...controllers]
 })
 
 export class AppContainer {}
@@ -255,5 +255,9 @@ async function init() {
 }
    
 init();`
+    }
+
+    static getIndexApiTemplate() {
+        return `export const controllers = [];`;
     }
 }
