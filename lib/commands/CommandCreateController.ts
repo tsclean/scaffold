@@ -70,20 +70,16 @@ export class ControllerCreateCommand implements yargs.CommandModule {
             if(name === param) {
                 nameService = name;
                 const nameCapitalizeService = CommandUtils.capitalizeString(nameService);
-                const transformString = CommandUtils.transformInitialString(nameCapitalizeService);
 
                 return `import {Mapping, Get} from "@tsclean/core";
-import {${nameCapitalizeService}ServiceImpl} from "@/domain/use-cases/impl/${nameService}-service-impl";
 
 @Mapping('api/v1/${nameService}')
 export class ${nameCapitalizeService}Controller {
 
-    constructor(
-        private readonly ${transformString}Service: ${nameCapitalizeService}ServiceImpl
-    ) {
+    constructor() {
     }
     
-    // Example funcion
+    // Example function
     @Get()
     async getWelcome(): Promise<any> {
         return 'Welcome to the world of clean architecture'
@@ -98,7 +94,6 @@ export class ${nameCapitalizeService}Controller {
 @Mapping('')
 export class ${nameCapitalize}Controller {
     constructor() {
-        
     }
 }
 `
