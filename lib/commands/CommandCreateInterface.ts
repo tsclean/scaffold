@@ -5,7 +5,6 @@ import {EMOJIS} from "../utils/emojis";
 import {MESSAGES} from "../utils/messages";
 import {CommandUtils} from "./CommandUtils";
 import {banner, errorMessage} from "../utils/helpers";
-import chalk from "chalk";
 
 export class InterfaceCreateCommand implements yargs.CommandModule {
     command = "create:interface";

@@ -190,7 +190,7 @@ dist
                 break;
         }
 
-        packageJsonContent.dependencies["@tsclean/core"] = "^1.0.1"
+        packageJsonContent.dependencies["@tsclean/core"] = "^1.6.9"
         packageJsonContent.dependencies["dotenv"] = "^10.0.0"
         packageJsonContent.dependencies["helmet"] = "^4.6.0"
         packageJsonContent.dependencies["module-alias"] = "^2.2.2"
