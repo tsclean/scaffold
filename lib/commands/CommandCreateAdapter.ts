@@ -1,5 +1,5 @@
 import ora from "ora";
-import yargs from "yargs";
+import yargs, {exit} from "yargs";
 
 import {PATHS} from "../utils/paths";
 import {EMOJIS} from "../utils/emojis";
@@ -7,6 +7,7 @@ import {MESSAGES} from "../utils/messages";
 import {CommandUtils} from "./CommandUtils";
 import {CONSTANTS} from "../utils/constants";
 import {banner, errorMessage, executeCommand} from "../utils/helpers";
+import fs from "fs";
 
 export class AdapterCreateCommand implements yargs.CommandModule {
     command = "create:adapter-orm";
@@ -56,6 +57,9 @@ export class AdapterCreateCommand implements yargs.CommandModule {
             // Validate that the entity exists for importing into the ORM adapter.
             await CommandUtils.readModelFiles(PATHS.PATH_MODELS_ENTITY(), args.name as string);
 
+            // Validate that another manager is not implemented.
+            await CommandUtils.readManagerFiles(PATHS.PATH_MODELS_ORM(base, args.orm), args.manager as string);
+
             if (args.orm === CONSTANTS.MONGOOSE || args.orm === CONSTANTS.SEQUELIZE) {
                 await CommandUtils.deleteFile(PATHS.PATH_INDEX(base));
                 await CommandUtils.createFile(PATHS.PATH_INDEX(base), AdapterCreateCommand.getTemplateServer(args.name as string, args.orm, args.manager as string));
@@ -73,15 +77,10 @@ export class AdapterCreateCommand implements yargs.CommandModule {
                 // This message is only displayed in sequelize
                 const env = args.manager ? `${EMOJIS.ROCKET} ${MESSAGES.CONFIG_ENV()}` : "";
 
-                const pathAdapter = args.manager
-                    ? PATHS.PATH_PROVIDER_SEQUELIZE(base, args.orm, args.name, args.manager)
-                    : PATHS.PATH_PROVIDER_MONGOOSE(base, args.orm, args.name);
-
                 setTimeout(() => {
                     spinner.succeed(CONSTANTS.INSTALLATION_COMPLETED)
                     spinner.stopAndPersist({
                         symbol: EMOJIS.ROCKET,
-                        prefixText: MESSAGES.PROVIDER_SUCCESS(pathAdapter),
                         text: `${MESSAGES.FILE_SUCCESS(CONSTANTS.ADAPTER, path)}
 ${env}`
                     });

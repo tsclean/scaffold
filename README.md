@@ -95,13 +95,13 @@ the tasks.
 - command to generate the sequelize orm.
 
 ```shell
-   scaffold create:adapter --name=[adapter name] --orm=sequelize --manager=[database manager]
+   scaffold create:adapter-orm --name=[adapter name] --orm=sequelize --manager=[database manager]
 ```
 
 - command to generate the mongoose orm.
 
 ```shell
-   scaffold create:adapter --name=[adapter name] --orm=mongoose 
+   scaffold create:adapter--orm --name=[adapter name] --orm=mongoose 
 ```
 
 ## Controller Generation

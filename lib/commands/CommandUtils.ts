@@ -2,6 +2,7 @@ import * as fs from 'fs'
 import * as path from 'path'
 import mkdirp from 'mkdirp'
 import {MESSAGES} from "../utils/messages";
+import {CONSTANTS} from "../utils/constants";
 
 export class CommandUtils {
 
@@ -66,7 +67,7 @@ export class CommandUtils {
      */
     static capitalizeString(param: string) {
         let capitalize = param.replace(/(\b\w)/g, (str) => str.toUpperCase());
-        return  capitalize.replace(/-/g, "")
+        return capitalize.replace(/-/g, "")
     }
 
     /**
@@ -76,7 +77,7 @@ export class CommandUtils {
     static transformInitialString(param: string) {
         let stringInitial = param.replace(/(\b\w)/g, (str) => str.toUpperCase());
         let lowerCaseString = stringInitial[0].toLowerCase() + stringInitial.substring(1);
-        return  lowerCaseString.replace(/-/g, "")
+        return lowerCaseString.replace(/-/g, "")
     }
 
     /**
@@ -97,23 +98,39 @@ export class CommandUtils {
      * @param directory
      * @param name
      */
-    static readModelFiles(directory: string, name: string): Promise<string[]> {
-        return new Promise((resolve, reject) => {
-            fs.readdir(directory, function (error, files: string[]) {
-                let fileExist: boolean;
-                for (const file of files) {
-                    const _name = file.slice(0, -3);
-                    fileExist = _name === name;
-                    resolve(files);
-                }
+    static readModelFiles(directory: string, name: string) {
+        fs.readdir(directory, function (error, files: string[]) {
+            let fileExist: boolean;
 
-                if (!fileExist) {
-                    console.log(MESSAGES.ERROR_MODEL(name));
+            const result = files.find(item => item.slice(0, -3) === name);
+
+            fileExist = result?.slice(0, -3) === name
+
+            if (!fileExist) {
+                console.log(MESSAGES.ERROR_MODEL(name));
+                process.exit(1);
+            }
+        });
+    }
+
+    /**
+     *
+     * @param directory
+     * @param manager
+     */
+    static readManagerFiles(directory: string, manager: string) {
+        if (manager === CONSTANTS.MYSQL || manager === CONSTANTS.POSTGRES) {
+            fs.readdir(directory, function (error, files) {
+                let flag: boolean;
+                const searchManager = files.slice(0)[0].split("-")[1];
+                console.log(searchManager, manager)
+
+                flag = searchManager === manager
+                if (!flag) {
+                    console.log(MESSAGES.ERROR_MANAGER(manager, searchManager));
                     process.exit(1);
                 }
-            });
-        })
-
-
+            })
+        }
     }
 }
