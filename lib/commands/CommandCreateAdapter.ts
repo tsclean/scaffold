@@ -66,7 +66,7 @@ export class AdapterCreateCommand implements yargs.CommandModule {
                 // Adapter
                 await CommandUtils.createFile(PATHS.PATH_ADAPTER(base, args.orm, args.name, args.manager), AdapterCreateCommand.getRepositoryAdapter(args.name as string, args.orm as string, args.manager as string))
                 // Provider
-                await CommandUtils.createFile(PATHS.PATH_PROVIDER(base), AdapterCreateCommand.generateProvider())
+                // await CommandUtils.createFile(PATHS.PATH_PROVIDER(base), AdapterCreateCommand.generateProvider())
                 // Model
                 await CommandUtils.createFile(PATHS.PATH_MODEL(base, args.orm, args.name), AdapterCreateCommand.getModels(args.name as string, args.orm as string, args.manager as string));
                 // Dependencies
