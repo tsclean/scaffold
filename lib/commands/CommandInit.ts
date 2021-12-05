@@ -57,6 +57,8 @@ export class InitCommand implements yargs.CommandModule {
             await CommandUtils.createFile(basePath + "/src/application/app.ts", ProjectInitTemplate.getAppTemplate())
             await CommandUtils.createFile(basePath + "/src/index.ts", ProjectInitTemplate.getIndexTemplate())
 
+            await CommandUtils.createFile(basePath + "/src/deployment/Dockerfile", ProjectInitTemplate.getDockerfileTemplate())
+
             await CommandUtils.createDirectories(basePath + "/src/domain/models")
             await CommandUtils.createDirectories(basePath + "/src/domain/use-cases/impl")
             await CommandUtils.createDirectories(basePath + "/src/infrastructure/driven-adapters/adapters")
