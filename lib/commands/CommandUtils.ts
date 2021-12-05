@@ -121,15 +121,17 @@ export class CommandUtils {
     static readManagerFiles(directory: string, manager: string) {
         if (manager === CONSTANTS.MYSQL || manager === CONSTANTS.POSTGRES) {
             fs.readdir(directory, function (error, files) {
-                let flag: boolean;
-                const searchManager = files.slice(0)[0].split("-")[1];
-                console.log(searchManager, manager)
+                if (!files === undefined) {
+                    let flag: boolean;
+                    const searchManager = files.slice(0)[0].split("-")[1];
 
-                flag = searchManager === manager
-                if (!flag) {
-                    console.log(MESSAGES.ERROR_MANAGER(manager, searchManager));
-                    process.exit(1);
+                    flag = searchManager === manager
+                    if (!flag) {
+                        console.log(MESSAGES.ERROR_MANAGER(manager, searchManager));
+                        process.exit(1);
+                    }
                 }
+                return;
             })
         }
     }

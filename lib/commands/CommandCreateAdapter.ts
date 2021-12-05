@@ -1,5 +1,5 @@
 import ora from "ora";
-import yargs, {exit} from "yargs";
+import yargs from "yargs";
 
 import {PATHS} from "../utils/paths";
 import {EMOJIS} from "../utils/emojis";
@@ -7,7 +7,6 @@ import {MESSAGES} from "../utils/messages";
 import {CommandUtils} from "./CommandUtils";
 import {CONSTANTS} from "../utils/constants";
 import {banner, errorMessage, executeCommand} from "../utils/helpers";
-import fs from "fs";
 
 export class AdapterCreateCommand implements yargs.CommandModule {
     command = "create:adapter-orm";
@@ -68,7 +67,7 @@ export class AdapterCreateCommand implements yargs.CommandModule {
                 // Provider
                 // await CommandUtils.createFile(PATHS.PATH_PROVIDER(base), AdapterCreateCommand.generateProvider())
                 // Model
-                await CommandUtils.createFile(PATHS.PATH_MODEL(base, args.orm, args.name), AdapterCreateCommand.getModels(args.name as string, args.orm as string, args.manager as string));
+                await CommandUtils.createFile(PATHS.PATH_MODEL(base, args.orm, args.name, args.manager), AdapterCreateCommand.getModels(args.name as string, args.orm as string, args.manager as string));
                 // Dependencies
                 const packageJsonContents = await CommandUtils.readFile(base + "/package.json");
                 await CommandUtils.createFile(base + "/package.json", AdapterCreateCommand.getPackageJson(packageJsonContents, args.orm as string, args.manager as string));
@@ -160,7 +159,7 @@ export class ${_param}${_orm}RepositoryAdapter {
                 if (manager === CONSTANTS.MYSQL || manager === CONSTANTS.POSTGRES) {
                     const _manager = CommandUtils.capitalizeString(manager);
                     return `import {${_param}Model} from "@/domain/models/${param}";
-import {${_param}Model${_manager}}from "@/infrastructure/driven-adapters/adapters/orm/${orm}/models/${param}";
+import {${_param}Model${_manager}}from "@/infrastructure/driven-adapters/adapters/orm/${orm}/models/${param}-${manager}";
 
 export class ${_param}${_manager}RepositoryAdapter {
     // Implementation
@@ -262,7 +261,7 @@ import {StartProjectInit} from "@tsclean/core";
         
 import {AppContainer} from "@/application/app";
 import {PORT, CONFIG_MYSQL} from "@/application/config/environment";
-import {${_name}Model${_manager}} from "@/infrastructure/driven-adapters/adapters/orm/sequelize/models/${name}";
+import {${_name}Model${_manager}} from "@/infrastructure/driven-adapters/adapters/orm/sequelize/models/${name}-${manager}";
     
 const sequelize = new Sequelize(CONFIG_MYSQL.database, CONFIG_MYSQL.user, CONFIG_MYSQL.password, {
     dialect: 'mysql',
@@ -291,7 +290,7 @@ import {StartProjectInit} from "@tsclean/core";
         
 import {AppContainer} from "@/application/app";
 import {PORT, CONFIG_POSTGRES} from "@/application/config/environment";
-import {${_name}Model${_manager}} from "@/infrastructure/driven-adapters/adapters/orm/sequelize/models/${name}";
+import {${_name}Model${_manager}} from "@/infrastructure/driven-adapters/adapters/orm/sequelize/models/${name}-${manager}";
 
 const sequelize = new Sequelize(CONFIG_POSTGRES.database, CONFIG_POSTGRES.user, CONFIG_POSTGRES.password, {
     dialect: 'postgres',

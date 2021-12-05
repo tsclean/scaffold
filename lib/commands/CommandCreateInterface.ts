@@ -40,7 +40,7 @@ export class InterfaceCreateCommand implements yargs.CommandModule {
             if(args.path as string === "models" || args.path as string === "service" || args.path as string === "infra") {
                 switch (args.path) {
                     case "models":
-                        basePath = `${process.cwd()}/src/domain/models/gateways`
+                        basePath = `${process.cwd()}/src/domain/models/contracts`
                         fileName = `${args.name}-repository.ts`
                         break
                     case "service":
@@ -48,7 +48,7 @@ export class InterfaceCreateCommand implements yargs.CommandModule {
                         fileName = `${args.name}-service.ts`
                         break
                     case "infra":
-                        basePath = `${process.cwd()}/src/infrastructure/entry-points/gateways`
+                        basePath = `${process.cwd()}/src/infrastructure/entry-points/contracts`
                         fileName = `${args.name}.ts`
                         break
                 }

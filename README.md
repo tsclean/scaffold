@@ -56,7 +56,7 @@ the tasks.
    Example: **`--name=user, --name=user-detail, --name=post-comments-user.`**
 
 ```shell
-   scaffold create:interface --name=user-detail --path=model
+   scaffold create:interface --name=user-detail --path=models
 ```
 
 ```shell
