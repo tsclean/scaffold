@@ -27,7 +27,6 @@ export class InitCommand implements yargs.CommandModule {
     }
    
     async handler(args: yargs.Arguments) {
-
         let spinner
 
         try {
