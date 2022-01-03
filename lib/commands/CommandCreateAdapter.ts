@@ -10,7 +10,7 @@ import {banner, errorMessage, executeCommand} from "../utils/helpers";
 
 export class AdapterCreateCommand implements yargs.CommandModule {
     command = "create:adapter-orm";
-    describe = "Generate a new adapter";
+    describe = "Generate a new adapter for ORM";
 
     builder(args: yargs.Argv) {
         return args

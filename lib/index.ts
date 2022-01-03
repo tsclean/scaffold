@@ -6,11 +6,13 @@ import {ControllerCreateCommand} from "./commands/CommandCreateController";
 import {DatabaseCreateCommand} from "./commands/CommandCreateDatabase"
 import {InterfaceCreateCommand} from "./commands/CommandCreateInterface";
 import {AdapterCreateCommand} from "./commands/CommandCreateAdapter";
+import {CommandCreateAdapterSimple} from "./commands/CommandCreateAdapterSimple";
 
 yargs.usage("Usage: $0 <command> [options]")
     .command(new InitCommand())
     .command(new DatabaseCreateCommand())
     .command(new AdapterCreateCommand())
+    .command(new CommandCreateAdapterSimple())
     .command(new EntityCreateCommand())
     .command(new InterfaceCreateCommand())
     .command(new ServiceCreateCommand())

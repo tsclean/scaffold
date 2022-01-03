@@ -10,6 +10,7 @@ This CLI creates the structure of a NodeJs and TypeScript project based on clean
   - [Interface Generation](#interface-generation)
   - [Service Generation](#service-generation)
   - [Adapter ORM Generation](#adapter-orm-generation)
+  - [Adapter Simple Generation](#adapter-simple-generation)
   - [Controller Generate](#controller-generation)
   
 
@@ -102,6 +103,15 @@ the tasks.
 
 ```shell
    scaffold create:adapter--orm --name=[adapter name] --orm=mongoose 
+```
+
+## Adapter Simple Generation
+
+1. The **`scaffold create:adapter`** command will generate an adapter simple in the **`infrastructure layer`**,
+   this task has **`--name`** as parameter and this is required.
+
+```shell
+   scaffold create:adapter --name=[adapter name]
 ```
 
 ## Controller Generation
