@@ -18,5 +18,10 @@ export const EMOJIS = {
     BOOM: get('boom'),
     PRAY: get('pray'),
     WINE: get('wine_glass'),
-    NO_ENTRY: get('no_entry_sign')
+    NO_ENTRY: get('no_entry_sign'),
+    APPLICATION: get('🛠️'),
+    DEPLOYMENT: get('✈️'),
+    ENTITIES: get('📶'),
+    CASES: get('🧳'),
+    INFRA: get('🏢'),
 };

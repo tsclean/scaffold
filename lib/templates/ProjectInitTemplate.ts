@@ -78,9 +78,10 @@ export const CONFIG_POSTGRES = {
     static getAppTemplate(): string {
         return `import {Container} from "@tsclean/core";
 import {controllers} from "@/infrastructure/entry-points/api";
+import {services, adapters} from "@/infrastructure/driven-adapters/providers";
 
 @Container({
-    providers: [],
+    providers: [...services, ...adapters],
     controllers: [...controllers]
 })
 
@@ -143,6 +144,25 @@ dist
         `
     }
 
+    static getDockerCompose() {
+        return `version: '3.1'
+services:
+  api:
+    build:
+      context: .
+      dockerfile: ./src/deployment/Dockerfile
+    volumes:
+      - ./:/app
+      - /app/node_modules
+    ports:
+      - "9000:9000"
+    environment:
+      - NODE_ENV=development
+      - PORT=9000
+    command: "npm run watch"`;
+
+    }
+
     /**
      * Gets contents of the package.json file.
      * @param projectName
@@ -163,10 +183,9 @@ dist
     /**
      * Appends to a given package.json template everything needed.
      * @param packageJson
-     * @param database
      * @returns
      */
-    static appendPackageJson(packageJson: string, database: string): string {
+    static appendPackageJson(packageJson: string): string {
         const packageJsonContent = JSON.parse(packageJson)
 
         if (!packageJsonContent.devDependencies) packageJsonContent.devDependencies = {}
@@ -179,16 +198,6 @@ dist
             "ts-node": "^10.2.1",
             "typescript": "^4.4.3"
         })
-
-        switch (database) {
-            case "mongodb":
-                packageJsonContent.devDependencies["@shelf/jest-mongodb"] = "^2.0.3"
-                packageJsonContent.devDependencies["@types/mongodb"] = "^4.0.7"
-                packageJsonContent.dependencies["mongodb"] = "^4.1.1"
-                break;
-            default:
-                break;
-        }
 
         packageJsonContent.dependencies["@tsclean/core"] = "^1.7.0"
         packageJsonContent.dependencies["dotenv"] = "^10.0.0"
@@ -239,6 +248,11 @@ PORT=9000`
 }`
     }
 
+    static getDockerIgnore() {
+        return `Dockerfile
+ node_modules`
+    }
+
     static getIndexTemplate() {
         return `import "module-alias/register";
 
@@ -254,7 +268,7 @@ async function init() {
     await app.listen(PORT, () => console.log('Running on port ' + PORT))
 }
    
-init();`
+init(),catch();`
     }
 
     static getIndexApiTemplate() {
@@ -278,5 +292,23 @@ EXPOSE 9000
 
 CMD ["nodemon", "/dist/index.js"]
         `;
+    }
+
+    static getProvidersTemplate(): string {
+        return `export const adapters = [];
+        
+export const services = [];`
+    }
+
+    static getAdaptersIndex() {
+        return ``;
+    }
+
+    static getDrivenAdaptersIndex() {
+        return ``;
+    }
+
+    static getEntryPointsTemplate() {
+        return ``;
     }
 }
