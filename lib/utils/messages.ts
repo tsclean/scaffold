@@ -11,7 +11,7 @@ export const MESSAGES = {
     FILE_EXISTS: (path) => `${EMOJIS.NO_ENTRY} File ${chalk.blue(path)} already exists`,
     CONFIG_ENV: () => `${chalk.green(`Continue setting the environment variables in the ${chalk.blue(".env")} file`)}`,
     ERROR_HANDLER: (message) => `${chalk.black.bgRedBright(message)}`,
-    ERROR_MODEL: (name) => `${EMOJIS.NO_ENTRY} First you must create the entity ${chalk.red(name)} in order to be imported into the ORM adapter.`,
+    ERROR_MODEL: (name) => `${EMOJIS.NO_ENTRY} First you must create the entity ${chalk.red(name)} in order to be imported into the file.`,
     ERROR_MANAGER: (manager, args) =>
         `${EMOJIS.NO_ENTRY} The manager ${chalk.red(manager)} can not be implemented because it already has the implementation of ${chalk.blue(args)}`,
     ERROR_INTERFACE: (path) => `${EMOJIS.NO_ENTRY} Path ${chalk.blue(path)} does not correspond to models, service the infra.`,

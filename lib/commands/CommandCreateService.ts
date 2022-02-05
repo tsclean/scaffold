@@ -34,8 +34,6 @@ export class ServiceCreateCommand implements yargs.CommandModule {
 
             const fileExists = await CommandUtils.fileExists(path)
 
-            banner()
-
             setTimeout(() => (spinner = ora('Installing...').start()), 1000)
 
             if (fileExists) throw MESSAGES.FILE_EXISTS(path)

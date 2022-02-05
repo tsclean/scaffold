@@ -27,8 +27,6 @@ export class CommandCreateAdapterSimple implements yargs.CommandModule {
 
         try {
 
-            banner()
-
             setTimeout(async () => spinner = ora(CONSTANTS.INSTALLING).start(), 1000)
 
             const basePath = PATHS.BASE_PATH_ADAPTER_SIMPLE();

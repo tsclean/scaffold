@@ -18,5 +18,6 @@ export const PATHS = {
     PATH_MODEL: (base, orm, name, manager) => orm === CONSTANTS.MONGOOSE
         ? `${base}/src/infrastructure/driven-adapters/adapters/orm/${orm}/models/${name}.ts`
         : `${base}/src/infrastructure/driven-adapters/adapters/orm/${orm}/models/${name}-${manager}.ts`,
-    PATH_PROVIDER: (base) => `${base}/src/infrastructure/driven-adapters/providers/index.ts`
+    PATH_PROVIDER: (base) => `${base}/src/infrastructure/driven-adapters/providers/index.ts`,
+    PATH_SERVICE_RESOURCE: () => `${process.cwd()}/src/domain/use-cases/impl`,
 }

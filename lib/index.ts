@@ -7,6 +7,7 @@ import {DatabaseCreateCommand} from "./commands/CommandCreateDatabase"
 import {InterfaceCreateCommand} from "./commands/CommandCreateInterface";
 import {AdapterCreateCommand} from "./commands/CommandCreateAdapter";
 import {CommandCreateAdapterSimple} from "./commands/CommandCreateAdapterSimple";
+import {CommandCreateServiceResource} from "./commands/CommandCreateServiceResource";
 
 yargs.usage("Usage: $0 <command> [options]")
     .command(new InitCommand())
@@ -16,6 +17,7 @@ yargs.usage("Usage: $0 <command> [options]")
     .command(new EntityCreateCommand())
     .command(new InterfaceCreateCommand())
     .command(new ServiceCreateCommand())
+    .command(new CommandCreateServiceResource())
     .command(new ControllerCreateCommand())
     .recommendCommands()
     .demandCommand(1)

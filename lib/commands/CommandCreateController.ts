@@ -33,8 +33,6 @@ export class ControllerCreateCommand implements yargs.CommandModule {
             const path = `${basePath}${filename}`
             const fileExists = await CommandUtils.fileExists(path)
 
-            banner()
-
             setTimeout(() => (spinner = ora('Installing...').start()), 1000)
 
             if (fileExists) throw MESSAGES.FILE_EXISTS(path)

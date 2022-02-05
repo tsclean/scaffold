@@ -33,7 +33,6 @@ export class InterfaceCreateCommand implements yargs.CommandModule {
 
         try {
             const fileContent = InterfaceCreateCommand.getTemplateInterface(args.name as any, args.path as any)
-            banner()
 
             setTimeout(() => (spinner = ora('Installing...').start()), 1000);
 

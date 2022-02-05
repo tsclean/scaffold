@@ -25,8 +25,6 @@ export class DatabaseCreateCommand implements yargs.CommandModule {
     async handler(args: yargs.Arguments) {
         try {
 
-            banner()
-
             const fileContentMongo = DatabaseTemplate.getTemplateMongoDatabase()
             const fileContentMysql = DatabaseTemplate.getTemplateMysqlDatabase()
             const fileContentPostgres = DatabaseTemplate.getTemplatePostgresDatabase()

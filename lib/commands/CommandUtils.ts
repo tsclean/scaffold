@@ -71,6 +71,13 @@ export class CommandUtils {
     }
 
     /**
+     * @param param
+     */
+    static transformStringToUpperCase(param: string) {
+        return param.toUpperCase();
+    }
+
+    /**
      * Transforms the initial letter into lowercase
      * @param param
      */

@@ -9,6 +9,7 @@ This CLI creates the structure of a NodeJs and TypeScript project based on clean
   - [Model Generation](#model-generation)
   - [Interface Generation](#interface-generation)
   - [Service Generation](#service-generation)
+  - [Service Resource Generation](#service-resource-generation)
   - [Adapter ORM Generation](#adapter-orm-generation)
   - [Adapter Simple Generation](#adapter-simple-generation)
   - [Controller Generate](#controller-generation)
@@ -71,14 +72,26 @@ the tasks.
 
 ## Service Generation
 
-1. The **`scaffold create:service`** command will generate the interface and the service that implements it in the **`domain layer [use-cases]`**.
-   **`domain layer [use-cases]`**, this task has **`--name`** as parameter and this is required. The name must have a hyphen in case it is a compound name.
+1. The **`scaffold create:service`** command will generate the interface and the service that implements it in the **`domain layer [use-cases]`**, this task has **`--name`** as parameter and this is required. The name must be hyphenated if it is a compound name.
 
    Example: **`--name=user, --name=user-detail, --name=post-comments-user.`**
 
 ```shell
    scaffold create:service --name=[service name]
 ```
+
+## Service Resource Generation
+
+1. The **`scaffold create:service-resource`** command will generate the interface and the service that implements it in the **`domain layer [use-cases]`**,
+   this task has **`--name`** as parameter and **`--resource`** this is required. The name must have a hyphen in case it is a compound name and must be the same as the name of the entity.
+
+
+   Example: **`--name=user --resource`**
+
+```shell
+   scaffold create:service --name=[service name] --resource
+```
+
 
 ## Adapter ORM Generation
 
