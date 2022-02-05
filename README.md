@@ -8,6 +8,7 @@ This CLI creates the structure of a NodeJs and TypeScript project based on clean
   - [Project Generation](#project-generation)
   - [Model Generation](#model-generation)
   - [Interface Generation](#interface-generation)
+  - [Interface Resource Generation](#interface-resource-generation)
   - [Service Generation](#service-generation)
   - [Service Resource Generation](#service-resource-generation)
   - [Adapter ORM Generation](#adapter-orm-generation)
@@ -43,10 +44,10 @@ the tasks.
 1. The **`scaffold create:entity`** command will generate a model in the **`domain layer [models]`**, this task has **`--name`** as parameter and this is required.
    The name must have a middle hyphen in case it is compound.
 
-   Example: **`--name=user, --name=user-detail, --name=post-comments-user.`**
+   Example: **`--name=user`**
 
 ```shell
-   scaffold create:entity --name=[model name]
+   scaffold create:entity --name=user
 ```
 
 ## Interface Generation
@@ -69,6 +70,17 @@ the tasks.
    scaffold create:interface --name=user-detail --path=infra
 ```
 
+## Interface Resource Generation
+
+1. The command **`scaffold create:interface-resource`** generates an interface, this task has **`--name`** and **`--resource`** as parameters this is required.
+   The name must be in lower case, as it is in the model.
+
+
+    Example: **`--name=user`**
+
+```shell
+   scaffold create:interface-resource --name=user --resource
+```
 
 ## Service Generation
 
@@ -77,19 +89,19 @@ the tasks.
    Example: **`--name=user, --name=user-detail, --name=post-comments-user.`**
 
 ```shell
-   scaffold create:service --name=[service name]
+   scaffold create:service --name=user
 ```
 
 ## Service Resource Generation
 
 1. The **`scaffold create:service-resource`** command will generate the interface and the service that implements it in the **`domain layer [use-cases]`**,
-   this task has **`--name`** as parameter and **`--resource`** this is required. The name must have a hyphen in case it is a compound name and must be the same as the name of the entity.
+   this task has **`--name`** as parameter and **`--resource`** this is required. The name must be in lower case, as it is in the model.
 
 
    Example: **`--name=user --resource`**
 
 ```shell
-   scaffold create:service --name=[service name] --resource
+   scaffold create:service --name=user --resource
 ```
 
 
@@ -106,16 +118,16 @@ the tasks.
 2. By convention the plugin handles names in singular, this helps to create additional code that benefits each component. 
    In this case when you create the adapter with the name that matches the entity in the domain models folder, it does the automatic import in all the component of the adapter.
 
-- command to generate the sequelize orm.
+- command to generate sequelize orm.
 
 ```shell
-   scaffold create:adapter-orm --name=[adapter name] --orm=sequelize --manager=[database manager]
+   scaffold create:adapter-orm --name=user --orm=sequelize --manager=mysql
 ```
 
 - command to generate the mongoose orm.
 
 ```shell
-   scaffold create:adapter--orm --name=[adapter name] --orm=mongoose 
+   scaffold create:adapter--orm --name=user --orm=mongoose 
 ```
 
 ## Adapter Simple Generation
@@ -124,7 +136,7 @@ the tasks.
    this task has **`--name`** as parameter and this is required.
 
 ```shell
-   scaffold create:adapter --name=[adapter name]
+   scaffold create:adapter --name=jwt
 ```
 
 ## Controller Generation
@@ -135,7 +147,7 @@ the tasks.
    Example: **`--name=user, --name=user-detail, --name=post-comments-user.`**
 
 ```shell
-   scaffold create:controller --name=[controller name]
+   scaffold create:controller --name=user-detail
 ```
 
 | HTTP verbs    | Decorators    |
