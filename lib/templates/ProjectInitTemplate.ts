@@ -268,7 +268,7 @@ async function init() {
     await app.listen(PORT, () => console.log('Running on port ' + PORT))
 }
    
-init(),catch();`
+init().catch();`
     }
 
     static getIndexApiTemplate() {
