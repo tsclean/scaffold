@@ -192,6 +192,7 @@ services:
         Object.assign(packageJsonContent.devDependencies, {
             "@types/node": "^16.9.1",
             "@types/jest": "^27.0.1",
+            "jest": "^27.5.1",
             "nodemon": "^2.0.9",
             "rimraf": "^3.0.2",
             "ts-jest": "^27.0.5",
