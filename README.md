@@ -302,7 +302,7 @@ export class UserServiceImpl implements IUserService {
      * Method to send the data to the repository.
      * @param data {@code UserModel}
      */
-    async save(data: UserModel): Promise<UserModel> {
+    async save(data: AddUserParams): Promise<UserModel> {
         // Send the data to the repository.
         return this.saveUserRepository.save({...data});
     }
@@ -347,7 +347,7 @@ export class UserMongooseRepositoryAdapter implements IUserRepository {
 }
 ```
 
-6. Pasamos el key:value para hacer la inyeccion de dependencias
+6. Pass the key:value to do the dependency injections
 
 ```typescript
 // src/infrastructure/driven-adapters/providers/index.ts
@@ -380,7 +380,7 @@ export const services = [
 7. Create controller user
 
 ```shell
-scaffold create:controller --name=user-
+scaffold create:controller --name=user
 ```
 
 ```typescript
