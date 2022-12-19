@@ -14,6 +14,8 @@ This CLI creates the structure of a NodeJs and TypeScript project based on clean
   - [Adapter ORM Generation](#adapter-orm-generation)
   - [Adapter Simple Generation](#adapter-simple-generation)
   - [Controller Generate](#controller-generation)
+  - [Decorators](#decorators)
+  - [Example of use case](#example-of-use-case)
   
 
 # Implementation of the plugin
@@ -127,7 +129,7 @@ the tasks.
 - command to generate the mongoose orm.
 
 ```shell
-   scaffold create:adapter--orm --name=user --orm=mongoose 
+   scaffold create:adapter-orm --name=user --orm=mongoose 
 ```
 
 ## Adapter Simple Generation
@@ -150,14 +152,266 @@ the tasks.
    scaffold create:controller --name=user-detail
 ```
 
-| HTTP verbs    | Decorators    |
-| ------------- |:-------------:|
-| GET           | @Get()        |
-| POST          | @Post()       |   
-| PUT           | @Put()        |    
-| DELETE        | @Delete()     |
-| BODY          | @Body()       |
-| PARAMS        | @Param()      |
+## Decorators
 
+Decorators allow us to add annotations and metadata or change the behavior of classes, properties, methods, parameters and accessors.
+
+`@Services` Decorator to inject the logic of this class as a service.
+
+```typescript
+@Services
+export class UserServiceImpl {}
+```
+
+`@Adapter` Decorator to keep the reference of an interface and to be able to apply the SOLID principle of Dependency Inversion.
+
+```typescript
+// Constant to have the interface reference.
+export const USER_REPOSITORY = 'USER_REPOSITORY';
+
+export interface IUserRepository<T> {
+    save: (data: T) => Promise<T>
+}
+
+@service
+export class UserServiceImpl {
+    constructor(
+        @Adapter(USER_REPOSITORY)
+        private readonly userRespository: IUserRepository
+    ) {}
+}
+```
+
+`@Mapping` Decorator that allows us to create the path of an end point.
+
+```typescript
+@Mapping('api/v1/users')
+export class UserController {}
+```
+
+#### Decorators HTTP
+
+`@Get()` Decorator to solve a request for a specific resource.
+
+`@Post()` Decorator used to send an entity to a specific resource.
+
+`@Put()` Decorator that replaces the current representations of the target resource with the payload of the request.
+
+`@Delete()` Decorator that deletes the specific resource.
+
+`@Params()` Decorator to read the parameters specified in a method.
+
+`@Body()` Decorator that passes the payload of a method in the request.
+
+```typescript
+@Mapping('api/v1/users')
+export class UserController {
+    
+    @Get()
+    getAllUsers() {}
+    
+    @Get(':id')
+    getByIdUser(@Params() id: string | number) {}
+    
+    @Post()
+    saveUser(@Body() data: T) {}
+    
+    @Put(':id')
+    updateByIdUser(@Params() id: string | number, @Body data: T) {}
+    
+    @Delete(':id')
+    deleteByIdUser(@Params() id: string | number) {}
+}
+```
+
+## Example of use case
+
+- Create a user in the store
+
+1. Create the project.
+
+```shell
+scaffold create:project --name=store
+```
+2. Create entity user
+
+```shell
+scaffold create:entity --name=user
+```
+
+```typescript
+// src/domain/models/user.ts
+export type UserModel = {
+    id: string | number;
+    name: string;
+    email: string;
+}
+
+export type AddUserParams = Omit<UserModel, 'id'>
+```
+
+3. Create the contract to create the user.
+```shell
+scaffold create:interface --name=user --path=models
+```
+
+```typescript
+// src/domain/models/contracts/user-repository.ts
+import {AddUserParams, UserModel} from "@/domain/models/user";
+
+export const USER_REPOSITORY = 'USER_REPOSITORY';
+
+export interface IUserRepository {
+    save: (data:AddUserParams) => Promise<UserModel>;
+}
+```
+
+4. Create services user
+```shell
+scaffold create:service --name=user
+```
+
+```typescript
+// src/domain/use-cases/user-service.ts
+import {AddUserParams, UserModel} from "@/domain/models/user";
+
+export const USER_SERVICE = 'USER_SERVICE';
+
+export interface IUserService {
+    save: (data: AddUserParams) => Promise<UserModel>;
+}
+```
+
+```typescript
+// src/domain/use-cases/impl/user-service-impl.ts
+import {Adapter, Service} from "@tsclean/core";
+import {IUserService} from "@/domain/use-cases/user-service";
+import {UserModel} from "@/domain/models/user";
+import {IUserRepository, USER_REPOSITORY} from "@/domain/models/contracts/user-repository";
+
+@Service()
+export class UserServiceImpl implements IUserService {
+
+    constructor(
+        // Decorator to keep the reference of the Interface, by means of the constant.
+        @Adapter(USER_REPOSITORY)
+        private readonly userRepository: IUserRepository,
+    ) {}
+
+    /**
+     * Method to send the data to the repository.
+     * @param data {@code UserModel}
+     */
+    async save(data: UserModel): Promise<UserModel> {
+        // Send the data to the repository.
+        return this.saveUserRepository.save({...data});
+    }
+}
+```
+
+5. Create mongoose adapter and additionally you must include the url of the connection in the `.env` file
+
+```shell
+scaffold create:adapter-orm --name=user --orm=mongoose 
+```
+```typescript
+// src/infrastructure/driven-adapters/adapters/orm/mongoose/models/user.ts
+import { UserModel } from '@/domain/models/user';
+import { model, Schema } from "mongoose";
+
+const schema = new Schema<UserModel>({
+    id: {
+        type: String
+    },
+    name: {
+        type: String
+    },
+    email: {
+        type: String
+    }
+}, {strict: false});
+
+export const UserModelSchema = model<UserModel>('users', schema);
+```
+
+```typescript
+// src/infrastructure/driven-adapters/adapters/orm/mongoose/user-mongoose-repository-adapter.ts
+import {AddUserParams, UserModel} from "@/domain/models/user";
+import {UserModelSchema as Schema} from "@/infrastructure/driven-adapters/adapters/orm/mongoose/models/user";
+import {IUserRepository} from "@/domain/models/contracts/user-repository";
+
+export class UserMongooseRepositoryAdapter implements IUserRepository {
+    async save(data: AddUserParams): Promise<UserModel> {
+        return Schema.create(data);
+    }
+}
+```
+
+6. Pasamos el key:value para hacer la inyeccion de dependencias
+
+```typescript
+// src/infrastructure/driven-adapters/providers/index.ts
+import {USER_SERVICE} from "@/domain/use-cases/user-service";
+import {USER_REPOSITORY} from "@/domain/models/contracts/user-repository";
+import {UserServiceImpl} from "@/domain/use-cases/impl/user-service-impl";
+import {
+    UserMongooseRepositoryAdapter
+} from "@/infrastructure/driven-adapters/adapters/orm/mongoose/user-mongoose-repository-adapter";
+
+export const adapters = [
+    {
+        // Constant referring to the interface
+        provide: USER_REPOSITORY,
+        // Class that implements the interface
+        useClass: UserMongooseRepositoryAdapter
+    }
+];
+
+export const services = [
+    {
+        // Constant referring to the interface
+        provide: USER_SERVICE,
+        // Class that implements the interface
+        useClass: UserServiceImpl
+    }
+];
+```
+
+7. Create controller user
+
+```shell
+scaffold create:controller --name=user-
+```
+
+```typescript
+// src/infrastructure/entry-points/api/user-controller.ts
+import {Mapping, Post, Body} from "@tsclean/core";
+
+import {AddUserParams, ModelUser} from "@/domain/models/user";
+import {IUserService, USER_SERVICE} from "@/domain/use-cases/user-service";
+
+@Mapping('api/v1/users')
+export class UserController {
+
+    constructor(
+        // Decorator to keep the reference of the Interface, by means of the constant.
+        @Adapter(USER_SERVICE)
+        private readonly userService: IUserService
+    ) {}
+
+    @Post()
+    async saveUserController(@Body() data: AddUserParams): Promise<ModelUser | any> {
+        // Send the data to the service through the interface.
+        const user = await this.userService.save(data);
+
+        return {
+            message: 'User created successfully',
+            user
+        }
+    }
+}
+```
+
+8. Finally you can test this endpoint `http://localhost:9000/api/v1/users`, method `POST` in the rest client of your choice and send the corresponding data.
 ---
 
