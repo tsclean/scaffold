@@ -329,15 +329,20 @@ import { StartProjectInit } from "@tsclean/core";
 import { AppContainer } from "@/application/app";
 import {MONGODB_URI, PORT} from "@/application/config/environment";
 
+function initConnect(uri: string): Promise<void> {
+    connect(uri)
+        .then(() => console.log('DB Mongo connected: ' + uri))
+        .catch((err) => console.log(err));
+}
+
 async function run(): Promise<void> {
-  await connect(MONGODB_URI);
-  console.log('DB Mongo connected')
-  const app = await StartProjectInit.create(AppContainer);
+   const app = await StartProjectInit.create(AppContainer);
+   await initConnect(MONGODB_URI);
    app.use(helmet());
    await app.listen(PORT, () => console.log('Running on port: ' + PORT))
 }
 
-run();
+void run().catch((err) => console.log(err));
 `
         }
     }

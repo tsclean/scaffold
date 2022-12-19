@@ -79,19 +79,29 @@ export class InterfaceCreateCommand implements yargs.CommandModule {
      * @protected
      */
     protected static getTemplateInterface(param: string, path: string) {
-        const string = CommandUtils.capitalizeString(param)
+        const string = CommandUtils.capitalizeString(param);
+        const nameRef = param.toUpperCase();
 
         switch (path) {
             case 'models':
-                return `export interface I${string}Repository {
+                return `
+                export const ${nameRef}_REPOSITORY = '${nameRef}_REPOSITORY';
+                
+                export interface I${string}Repository {
     
 }`
             case 'service':
-                return `export interface I${string}Service {
+                return `
+                export const ${nameRef}_REPOSITORY = '${nameRef}_REPOSITORY';
+                
+                export interface I${string}Service {
     
 }`
             case 'infra':
-                return `export interface I${string} {
+                return `
+                export const ${nameRef}_REPOSITORY = '${nameRef}_REPOSITORY';
+                
+                export interface I${string} {
     
 }`
         }
