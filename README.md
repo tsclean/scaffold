@@ -304,7 +304,7 @@ export class UserServiceImpl implements IUserService {
      */
     async save(data: AddUserParams): Promise<UserModel> {
         // Send the data to the repository.
-        return this.saveUserRepository.save({...data});
+        return this.userRepository.save({...data});
     }
 }
 ```
