@@ -1,13 +1,12 @@
 {
    "name": "@clean/scaffold",
-   "version": "1.0.0",
+   "version": "1.7.7",
    "description": "This CLI creates an initial structure of a project based on clean architecture.",
    "main": "index.js",
    "bin": {
       "scaffold": "bin/scaffold.ts"
    },
    "publishConfig": {
-      "registry": "https://npm.pkg.github.com",
       "access": "public"
    },
    "scripts": {
