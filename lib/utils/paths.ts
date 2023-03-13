@@ -2,7 +2,7 @@ import {CONSTANTS} from "./constants";
 
 export const PATHS = {
     PATH_INDEX: (base) => `${base}/src/index.ts`,
-    PATH_MODELS_ENTITY: () => `${process.cwd()}/src/domain/models/`,
+    PATH_MODELS_ENTITY: () => `${process.cwd()}/src/domain/entities/`,
     PATH_MODELS_ORM: (base, args) => `${base}/src/infrastructure/driven-adapters/adapters/orm/${args}`,
     BASE_PATH_ADAPTER: (orm) => `${process.cwd()}/src/infrastructure/driven-adapters/adapters/orm/${orm}/`,
     BASE_PATH_ADAPTER_SIMPLE: () => `${process.cwd()}/src/infrastructure/driven-adapters/adapters/`,
