@@ -61,7 +61,7 @@ the tasks.
    Example: **`--name=user, --name=user-detail, --name=post-comments-user.`**
 
 ```shell
-   scaffold create:interface --name=user-detail --path=models
+   scaffold create:interface --name=user-detail --path=entities
 ```
 
 ```shell
@@ -240,24 +240,24 @@ scaffold create:entity --name=user
 ```
 
 ```typescript
-// src/domain/models/user.ts
-export type UserModel = {
+// src/domain/entities/user.ts
+export type UserEntity = {
     id: string | number;
     name: string;
     email: string;
 }
 
-export type AddUserParams = Omit<UserModel, 'id'>
+export type AddUserParams = Omit<UserEntity, 'id'>
 ```
 
 3. Create the contract to create the user.
 ```shell
-scaffold create:interface --name=user --path=models
+scaffold create:interface --name=user --path=entities
 ```
 
 ```typescript
 // src/domain/models/contracts/user-repository.ts
-import {AddUserParams, UserModel} from "@/domain/models/user";
+import {AddUserParams, UserModel} from "@/domain/entities/user";
 
 export const USER_REPOSITORY = 'USER_REPOSITORY';
 
@@ -273,12 +273,12 @@ scaffold create:service --name=user
 
 ```typescript
 // src/domain/use-cases/user-service.ts
-import {AddUserParams, UserModel} from "@/domain/models/user";
+import {AddUserParams, UserEntity} from "@/domain/entities/user";
 
 export const USER_SERVICE = 'USER_SERVICE';
 
 export interface IUserService {
-    save: (data: AddUserParams) => Promise<UserModel>;
+    save: (data: AddUserParams) => Promise<UserEntity>;
 }
 ```
 
@@ -300,9 +300,9 @@ export class UserServiceImpl implements IUserService {
 
     /**
      * Method to send the data to the repository.
-     * @param data {@code UserModel}
+     * @param data {@code UserEntity}
      */
-    async save(data: AddUserParams): Promise<UserModel> {
+    async save(data: AddUserParams): Promise<UserEntity> {
         // Send the data to the repository.
         return this.userRepository.save({...data});
     }
@@ -316,10 +316,10 @@ scaffold create:adapter-orm --name=user --orm=mongoose
 ```
 ```typescript
 // src/infrastructure/driven-adapters/adapters/orm/mongoose/models/user.ts
-import { UserModel } from '@/domain/models/user';
+import { UserEntity } from '@/domain/entities/user';
 import { model, Schema } from "mongoose";
 
-const schema = new Schema<UserModel>({
+const schema = new Schema<UserEntity>({
     id: {
         type: String
     },
@@ -331,17 +331,17 @@ const schema = new Schema<UserModel>({
     }
 }, {strict: false});
 
-export const UserModelSchema = model<UserModel>('users', schema);
+export const UserModelSchema = model<UserEntity>('users', schema);
 ```
 
 ```typescript
 // src/infrastructure/driven-adapters/adapters/orm/mongoose/user-mongoose-repository-adapter.ts
-import {AddUserParams, UserModel} from "@/domain/models/user";
-import {UserModelSchema as Schema} from "@/infrastructure/driven-adapters/adapters/orm/mongoose/models/user";
+import {AddUserParams, UserEntity} from "@/domain/entities/user";
 import {IUserRepository} from "@/domain/models/contracts/user-repository";
+import {UserModelSchema as Schema} from "@/infrastructure/driven-adapters/adapters/orm/mongoose/models/user";
 
 export class UserMongooseRepositoryAdapter implements IUserRepository {
-    async save(data: AddUserParams): Promise<UserModel> {
+    async save(data: AddUserParams): Promise<UserEntity> {
         return Schema.create(data);
     }
 }

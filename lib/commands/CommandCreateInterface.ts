@@ -84,24 +84,21 @@ export class InterfaceCreateCommand implements yargs.CommandModule {
 
         switch (path) {
             case 'entities':
-                return `
-                export const ${nameRef}_REPOSITORY = '${nameRef}_REPOSITORY';
-                
-                export interface I${string}Repository {
+                return `export const ${nameRef}_REPOSITORY = '${nameRef}_REPOSITORY';
+
+export interface I${string}Repository {
     
 }`
             case 'service':
-                return `
-                export const ${nameRef}_REPOSITORY = '${nameRef}_REPOSITORY';
+                return `export const ${nameRef}_REPOSITORY = '${nameRef}_REPOSITORY';
                 
-                export interface I${string}Service {
+export interface I${string}Service {
     
 }`
             case 'infra':
-                return `
-                export const ${nameRef}_REPOSITORY = '${nameRef}_REPOSITORY';
-                
-                export interface I${string} {
+                return `export const ${nameRef}_REPOSITORY = '${nameRef}_REPOSITORY';
+
+export interface I${string} {
     
 }`
         }
