@@ -12,7 +12,7 @@ import {ProjectInitTemplate} from "../templates/ProjectInitTemplate";
 export class InitCommand implements yargs.CommandModule {
     command = "create:project"
     describe = "Generate initial Clean Architecture project structure."
-    
+
     builder(args: yargs.Argv) {
         return args
             .option("n", {
@@ -21,7 +21,7 @@ export class InitCommand implements yargs.CommandModule {
                 demandOption: true
             })
     }
-   
+
     async handler(args: yargs.Arguments) {
         let spinner
 
@@ -55,7 +55,7 @@ export class InitCommand implements yargs.CommandModule {
 
             await CommandUtils.createFile(basePath + "/src/deployment/Dockerfile", ProjectInitTemplate.getDockerfileTemplate())
 
-            await CommandUtils.createDirectories(basePath + "/src/domain/models")
+            await CommandUtils.createDirectories(basePath + "/src/domain/entities")
             await CommandUtils.createDirectories(basePath + "/src/domain/use-cases/impl")
             await CommandUtils.createDirectories(basePath + "/src/infrastructure/driven-adapters/adapters")
             await CommandUtils.createFile(basePath + "/src/infrastructure/driven-adapters/index.ts", ProjectInitTemplate.getDrivenAdaptersIndex())

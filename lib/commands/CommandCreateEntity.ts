@@ -24,7 +24,7 @@ export class EntityCreateCommand implements yargs.CommandModule {
         try {
 
             const fileContent = EntityCreateCommand.getTemplate(args.name as any)
-            const basePath = `${process.cwd()}/src/domain/models/`
+            const basePath = `${process.cwd()}/src/domain/entities/`
             const filename = `${args.name}.ts`
             const path = basePath + filename
             const fileExists = await CommandUtils.fileExists(path)
@@ -55,11 +55,11 @@ export class EntityCreateCommand implements yargs.CommandModule {
      */
     protected static getTemplate(param: string): string {
         const name = CommandUtils.capitalizeString(param)
-        return `export type ${name}Model = {
+        return `export type ${name}Entity = {
     // Attributes
 }
 
-export type Add${name}Params = Omit<${name}Model, 'id'>
+export type Add${name}Params = Omit<${name}Entity, 'id'>
 `
     }
 }
