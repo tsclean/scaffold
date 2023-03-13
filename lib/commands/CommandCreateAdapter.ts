@@ -101,36 +101,6 @@ export const adapters = [];
 
 export const services = [];
         `;
-
-//         switch (orm) {
-//             case CONSTANTS.SEQUELIZE:
-//                 const _manager = CommandUtils.capitalizeString(manager);
-//                 return `import {Provider} from "@tsclean/core";
-// import {${_name}${_manager}RepositoryAdapter} from "@/infrastructure/driven-adapters/adapters/orm/${orm}/${param}-${manager}-repository-adapter";
-//
-// export class ${_name}${_manager}Provider {
-//     static getProvider(): Provider {
-//         return {
-//             key: '${_name}${_manager}Adapter',
-//             classAdapter: ${_name}${_manager}RepositoryAdapter,
-//         }
-//     }
-// }
-//         `
-//             case CONSTANTS.MONGOOSE:
-//                 return `import {Provider} from "@tsclean/core";
-// import {${_name}${_orm}RepositoryAdapter} from "@/infrastructure/driven-adapters/adapters/orm/${orm}/${param}-${orm}-repository-adapter";
-//
-// export class ${_name}${_orm}Provider {
-//     static getProvider(): Provider {
-//         return {
-//             key: '${_name}${_orm}Adapter',
-//             classAdapter: ${_name}${_orm}RepositoryAdapter,
-//         }
-//     }
-// }
-//         `
-//    }
     }
 
     /**
@@ -146,7 +116,7 @@ export const services = [];
 
         switch (orm) {
             case CONSTANTS.MONGOOSE:
-                return `import {${_param}Model} from "@/domain/models/${param}";
+                return `import {${_param}Entity} from "@/domain/entities/${param}";
 import {${_param}ModelSchema} from "@/infrastructure/driven-adapters/adapters/orm/${orm}/models/${param}";
 
 export class ${_param}${_orm}RepositoryAdapter {
@@ -156,7 +126,7 @@ export class ${_param}${_orm}RepositoryAdapter {
             case CONSTANTS.SEQUELIZE:
                 if (manager === CONSTANTS.MYSQL || manager === CONSTANTS.POSTGRES) {
                     const _manager = CommandUtils.capitalizeString(manager);
-                    return `import {${_param}Model} from "@/domain/models/${param}";
+                    return `import {${_param}Entity} from "@/domain/entities/${param}";
 import {${_param}Model${_manager}}from "@/infrastructure/driven-adapters/adapters/orm/${orm}/models/${param}-${manager}";
 
 export class ${_param}${_manager}RepositoryAdapter {
@@ -182,22 +152,22 @@ export class ${_param}${_manager}RepositoryAdapter {
 
         switch (orm) {
             case CONSTANTS.MONGOOSE:
-                return `import { ${_name}Model } from '@/domain/models/${param}';
+                return `import { ${_name}Entity } from '@/domain/entities/${param}';
 import { model, Schema } from "mongoose";
 
-const schema = new Schema<${_name}Model>({
+const schema = new Schema<${_name}Entity>({
     // Implementation
 });
 
-export const ${_name}ModelSchema = model<${_name}Model>('${param}s', schema);
+export const ${_name}ModelSchema = model<${_name}Entity>('${param}s', schema);
 `;
             case CONSTANTS.SEQUELIZE:
                 const _manager = CommandUtils.capitalizeString(manager);
                 return `import { Table, Column, Model, Sequelize } from 'sequelize-typescript'
-import { ${_name}Model } from "@/domain/models/${param}";
+import { ${_name}Entity } from "@/domain/entities/${param}";
 
 @Table({ tableName: '${param}s' })
-export class ${_name}Model${_manager} extends Model<${_name}Model> {
+export class ${_name}Model${_manager} extends Model<${_name}Entity> {
     // Implementation
 }`
         }
@@ -216,7 +186,6 @@ export class ${_name}Model${_manager} extends Model<${_name}Model> {
         switch (orm) {
             case CONSTANTS.MONGOOSE:
                 updatePackages.dependencies["mongoose"] = "^6.0.10";
-                updatePackages.devDependencies["@types/mongoose"] = "^5.11.97";
                 break;
             case CONSTANTS.SEQUELIZE:
                 updatePackages.dependencies["sequelize"] = "^6.7.0"
@@ -266,7 +235,7 @@ const sequelize = new Sequelize(CONFIG_MYSQL.database, CONFIG_MYSQL.user, CONFIG
     models: [${_name}Model${_manager}],
 });
 
-async function init() {
+async function init(): Promise<void> {
     await sequelize.authenticate()
     console.log("DB mysql")
     const app = await StartProjectInit.create(AppContainer)
@@ -274,7 +243,7 @@ async function init() {
     await app.listen(PORT, () => console.log('Running on port ' + PORT))
 }
    
-init();`
+void init().catch((err) => console.log(err));`
                         case CONSTANTS.POSTGRES:
 
                             return `import "module-alias/register";
@@ -304,7 +273,7 @@ const sequelize = new Sequelize(CONFIG_POSTGRES.database, CONFIG_POSTGRES.user, 
     }
 });
 
-async function init() {
+async function init(): Promise<void> {
     await sequelize.authenticate()
     console.log("DB postgres")
     const app = await StartProjectInit.create(AppContainer)
@@ -312,7 +281,7 @@ async function init() {
     await app.listen(PORT, () => console.log('Running on port ' + PORT))
 }
    
-init();`
+void init().catch((err) => console.log(err));`
 
                     }
                 } else {
@@ -323,26 +292,27 @@ init();`
                 return `import 'module-alias/register'
 
 import helmet from 'helmet';
-import { connect } from 'mongoose';
+import { connect, set } from 'mongoose'
 import { StartProjectInit } from "@tsclean/core";
 
 import { AppContainer } from "@/application/app";
 import {MONGODB_URI, PORT} from "@/application/config/environment";
 
-function initConnect(uri: string): Promise<void> {
-    connect(uri)
-        .then(() => console.log('DB Mongo connected: ' + uri))
-        .catch((err) => console.log(err));
+async function managerConnectionMongo (): Promise<void> {
+  set('strictQuery', true)
+  await connect(MONGODB_URI)
 }
 
-async function run(): Promise<void> {
+async function init(): Promise<void> {
+ await managerConnectionMongo().then(() =>
+    console.log("Connection successfully to database of Mongo: " + MONGODB_URI)
+  )
    const app = await StartProjectInit.create(AppContainer);
-   await initConnect(MONGODB_URI);
    app.use(helmet());
    await app.listen(PORT, () => console.log('Running on port: ' + PORT))
 }
 
-void run().catch((err) => console.log(err));
+void init().catch((err) => console.log(err));
 `
         }
     }
