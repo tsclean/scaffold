@@ -42,7 +42,7 @@ ${chalk.green("CREATE")} ${name}/src/deployment/Dockerfile
 
 ${EMOJIS.ENTITIES} ${chalk.yellow("Layer ENTITIES - DOMAIN")}  
 
-${chalk.green("CREATE")} ${name}/src/domain/models
+${chalk.green("CREATE")} ${name}/src/domain/entities
 
 ${EMOJIS.CASES} ${chalk.red("Layer USE CASES - DOMAIN")}  
 
