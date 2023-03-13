@@ -1,6 +1,6 @@
 {
    "name": "@tsclean/scaffold",
-   "version": "1.7.8",
+   "version": "1.7.9",
    "description": "This CLI creates an initial structure of a project based on clean architecture.",
    "main": "index.js",
    "bin": {
@@ -15,8 +15,8 @@
       "prepublish": "npm run build"
    },
    "engines": {
-      "node": ">= 12.0.0",
-      "npm": ">= 6.9.0"
+      "node": ">= 16.19.0",
+      "npm": ">= 8.19.3"
    },
    "repository": {
       "type": "git",

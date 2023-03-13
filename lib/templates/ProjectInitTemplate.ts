@@ -200,7 +200,7 @@ services:
             "typescript": "^4.4.3"
         })
 
-        packageJsonContent.dependencies["@tsclean/core"] = "^1.7.0"
+        packageJsonContent.dependencies["@tsclean/core"] = "^1.10.13"
         packageJsonContent.dependencies["dotenv"] = "^10.0.0"
         packageJsonContent.dependencies["helmet"] = "^4.6.0"
         packageJsonContent.dependencies["module-alias"] = "^2.2.2"
@@ -263,13 +263,13 @@ import {StartProjectInit} from "@tsclean/core";
 import {AppContainer} from "@/application/app";
 import {PORT} from "@/application/config/environment";
     
-async function init() {
+async function init(): Promise<void> {
     const app = await StartProjectInit.create(AppContainer)
     app.use(helmet());
     await app.listen(PORT, () => console.log('Running on port ' + PORT))
 }
    
-init().catch();`
+void init().catch();`
     }
 
     static getIndexApiTemplate() {
@@ -277,7 +277,7 @@ init().catch();`
     }
 
     static getDockerfileTemplate(): string {
-        return `FROM node:14.4.0
+        return `FROM node:18-alpine3.14
 
 WORKDIR /app
 
