@@ -36,10 +36,10 @@ export class InterfaceCreateCommand implements yargs.CommandModule {
 
             setTimeout(() => (spinner = ora('Installing...').start()), 1000);
 
-            if(args.path as string === "models" || args.path as string === "service" || args.path as string === "infra") {
+            if(args.path as string === "entities" || args.path as string === "service" || args.path as string === "infra") {
                 switch (args.path) {
-                    case "models":
-                        basePath = `${process.cwd()}/src/domain/models/contracts`
+                    case "entities":
+                        basePath = `${process.cwd()}/src/domain/entities/contracts`
                         fileName = `${args.name}-repository.ts`
                         break
                     case "service":
@@ -83,7 +83,7 @@ export class InterfaceCreateCommand implements yargs.CommandModule {
         const nameRef = param.toUpperCase();
 
         switch (path) {
-            case 'models':
+            case 'entities':
                 return `
                 export const ${nameRef}_REPOSITORY = '${nameRef}_REPOSITORY';
                 

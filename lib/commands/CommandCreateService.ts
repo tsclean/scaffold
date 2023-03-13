@@ -79,7 +79,11 @@ export class ${name}ServiceImpl implements I${name}Service {
      */
     protected static getTemplateIServices(param: string) {
         const name = CommandUtils.capitalizeString(param)
-        return `export interface I${name}Service {
+        const nameRef = param.toUpperCase();
+
+        return `export const ${nameRef}_SERVICES = '${nameRef}_SERVICES';
+        
+export interface I${name}Service {
 
 }`
     }
