@@ -108,7 +108,6 @@ export class CommandUtils {
     static readModelFiles(directory: string, name: string) {
         fs.readdir(directory, function (error, files: string[]) {
             let fileExist: boolean;
-            console.log(name, files)
             const result = files.find(item => item.slice(0, -3) === name);
 
             fileExist = result?.slice(0, -3) === name
