@@ -16,7 +16,6 @@ This CLI creates the structure of a NodeJs and TypeScript project based on clean
   - [Controller Generate](#controller-generation)
   - [Decorators](#decorators)
   - [Example of use case](#example-of-use-case)
-  
 
 # Implementation of the plugin
 
@@ -26,7 +25,7 @@ the tasks.
 ```shell
     npm i -g @tsclean/scaffold
 ```
-   
+
 # Tasks
 
 ## Project Generation
@@ -57,7 +56,6 @@ the tasks.
 1. The **`scaffold create:interface`** command generates an interface, the location of the file is according to the
    component where it is required. where it is required. The name must have a hyphen in case it is a compound name.
 
-
    Example: **`--name=user, --name=user-detail, --name=post-comments-user.`**
 
 ```shell
@@ -77,8 +75,9 @@ the tasks.
 1. The command **`scaffold create:interface-resource`** generates an interface, this task has **`--name`** and **`--resource`** as parameters this is required.
    The name must be in lower case, as it is in the model.
 
+   Note: It is recommended to create resource type interfaces when an entity is expected to be used in the contract implementation.
 
-    Example: **`--name=user`**
+   Example: **`--name=user`**
 
 ```shell
    scaffold create:interface-resource --name=user --resource
@@ -99,25 +98,21 @@ the tasks.
 1. The **`scaffold create:service-resource`** command will generate the interface and the service that implements it in the **`domain layer [use-cases]`**,
    this task has **`--name`** as parameter and **`--resource`** this is required. The name must be in lower case, as it is in the model.
 
-
    Example: **`--name=user --resource`**
 
 ```shell
-   scaffold create:service --name=user --resource
+   scaffold create:service-resource --name=user --resource
 ```
-
 
 ## Adapter ORM Generation
 
-1. The **`scaffold create:adapter-orm`** command will generate an adapter in the **`infrastructure layer`**, 
+1. The **`scaffold create:adapter-orm`** command will generate an adapter in the **`infrastructure layer`**,
    this task has **`--name`** and **`--orm`** as parameters this is required. The name of the **`--manager`** parameter corresponds to the database manager.
    After the adapter is generated, the provider must be included in the app.ts file and then the name of the provider in the corresponding service must be passed through the constructor.
 
-
    Example: **`--name=user --orm=sequelize --manager=mysql`**
 
-
-2. By convention the plugin handles names in singular, this helps to create additional code that benefits each component. 
+2. By convention the plugin handles names in singular, this helps to create additional code that benefits each component.
    In this case when you create the adapter with the name that matches the entity in the domain models folder, it does the automatic import in all the component of the adapter.
 
 - command to generate sequelize orm.
@@ -129,7 +124,7 @@ the tasks.
 - command to generate the mongoose orm.
 
 ```shell
-   scaffold create:adapter-orm --name=user --orm=mongoose 
+   scaffold create:adapter-orm --name=user --orm=mongoose
 ```
 
 ## Adapter Simple Generation
@@ -167,18 +162,18 @@ export class UserServiceImpl {}
 
 ```typescript
 // Constant to have the interface reference.
-export const USER_REPOSITORY = 'USER_REPOSITORY';
+export const USER_REPOSITORY = 'USER_REPOSITORY'
 
 export interface IUserRepository<T> {
-    save: (data: T) => Promise<T>
+  save: (data: T) => Promise<T>
 }
 
 @service
 export class UserServiceImpl {
-    constructor(
-        @Adapter(USER_REPOSITORY)
-        private readonly userRespository: IUserRepository
-    ) {}
+  constructor(
+    @Adapter(USER_REPOSITORY)
+    private readonly userRespository: IUserRepository
+  ) {}
 }
 ```
 
@@ -206,21 +201,20 @@ export class UserController {}
 ```typescript
 @Mapping('api/v1/users')
 export class UserController {
-    
-    @Get()
-    getAllUsers() {}
-    
-    @Get(':id')
-    getByIdUser(@Params() id: string | number) {}
-    
-    @Post()
-    saveUser(@Body() data: T) {}
-    
-    @Put(':id')
-    updateByIdUser(@Params() id: string | number, @Body data: T) {}
-    
-    @Delete(':id')
-    deleteByIdUser(@Params() id: string | number) {}
+  @Get()
+  getAllUsers() {}
+
+  @Get(':id')
+  getByIdUser(@Params() id: string | number) {}
+
+  @Post()
+  saveUser(@Body() data: T) {}
+
+  @Put(':id')
+  updateByIdUser(@Params() id: string | number, @Body data: T) {}
+
+  @Delete(':id')
+  deleteByIdUser(@Params() id: string | number) {}
 }
 ```
 
@@ -233,6 +227,7 @@ export class UserController {
 ```shell
 scaffold create:project --name=store
 ```
+
 2. Create entity user
 
 ```shell
@@ -242,108 +237,116 @@ scaffold create:entity --name=user
 ```typescript
 // src/domain/entities/user.ts
 export type UserEntity = {
-    id: string | number;
-    name: string;
-    email: string;
+  id: string | number
+  name: string
+  email: string
 }
 
 export type AddUserParams = Omit<UserEntity, 'id'>
 ```
 
 3. Create the contract to create the user.
+
 ```shell
 scaffold create:interface --name=user --path=entities
 ```
 
 ```typescript
 // src/domain/models/contracts/user-repository.ts
-import {AddUserParams, UserModel} from "@/domain/entities/user";
+import { AddUserParams, UserModel } from '@/domain/entities/user'
 
-export const USER_REPOSITORY = 'USER_REPOSITORY';
+export const USER_REPOSITORY = 'USER_REPOSITORY'
 
 export interface IUserRepository {
-    save: (data:AddUserParams) => Promise<UserModel>;
+  save: (data: AddUserParams) => Promise<UserModel>
 }
 ```
 
 4. Create services user
+
 ```shell
 scaffold create:service --name=user
 ```
 
 ```typescript
 // src/domain/use-cases/user-service.ts
-import {AddUserParams, UserEntity} from "@/domain/entities/user";
+import { AddUserParams, UserEntity } from '@/domain/entities/user'
 
-export const USER_SERVICE = 'USER_SERVICE';
+export const USER_SERVICE = 'USER_SERVICE'
 
 export interface IUserService {
-    save: (data: AddUserParams) => Promise<UserEntity>;
+  save: (data: AddUserParams) => Promise<UserEntity>
 }
 ```
 
 ```typescript
 // src/domain/use-cases/impl/user-service-impl.ts
-import {Adapter, Service} from "@tsclean/core";
-import {IUserService} from "@/domain/use-cases/user-service";
-import {UserModel} from "@/domain/models/user";
-import {IUserRepository, USER_REPOSITORY} from "@/domain/models/contracts/user-repository";
+import { Adapter, Service } from '@tsclean/core'
+import { IUserService } from '@/domain/use-cases/user-service'
+import { UserModel } from '@/domain/models/user'
+import {
+  IUserRepository,
+  USER_REPOSITORY
+} from '@/domain/models/contracts/user-repository'
 
 @Service()
 export class UserServiceImpl implements IUserService {
+  constructor(
+    // Decorator to keep the reference of the Interface, by means of the constant.
+    @Adapter(USER_REPOSITORY)
+    private readonly userRepository: IUserRepository
+  ) {}
 
-    constructor(
-        // Decorator to keep the reference of the Interface, by means of the constant.
-        @Adapter(USER_REPOSITORY)
-        private readonly userRepository: IUserRepository,
-    ) {}
-
-    /**
-     * Method to send the data to the repository.
-     * @param data {@code UserEntity}
-     */
-    async save(data: AddUserParams): Promise<UserEntity> {
-        // Send the data to the repository.
-        return this.userRepository.save({...data});
-    }
+  /**
+   * Method to send the data to the repository.
+   * @param data {@code UserEntity}
+   */
+  async save(data: AddUserParams): Promise<UserEntity> {
+    // Send the data to the repository.
+    return this.userRepository.save({ ...data })
+  }
 }
 ```
 
 5. Create mongoose adapter and additionally you must include the url of the connection in the `.env` file
 
 ```shell
-scaffold create:adapter-orm --name=user --orm=mongoose 
+scaffold create:adapter-orm --name=user --orm=mongoose
 ```
+
 ```typescript
 // src/infrastructure/driven-adapters/adapters/orm/mongoose/models/user.ts
-import { UserEntity } from '@/domain/entities/user';
-import { model, Schema } from "mongoose";
+import { UserEntity } from '@/domain/entities/user'
+import { model, Schema } from 'mongoose'
 
-const schema = new Schema<UserEntity>({
+const schema = new Schema<UserEntity>(
+  {
     id: {
-        type: String
+      type: String
     },
     name: {
-        type: String
+      type: String
     },
     email: {
-        type: String
+      type: String
     }
-}, {strict: false});
+  },
+  { strict: false }
+)
 
-export const UserModelSchema = model<UserEntity>('users', schema);
+export const UserModelSchema = model<UserEntity>('users', schema)
 ```
 
 ```typescript
 // src/infrastructure/driven-adapters/adapters/orm/mongoose/user-mongoose-repository-adapter.ts
-import {AddUserParams, UserEntity} from "@/domain/entities/user";
-import {IUserRepository} from "@/domain/models/contracts/user-repository";
-import {UserModelSchema as Schema} from "@/infrastructure/driven-adapters/adapters/orm/mongoose/models/user";
+import { AddUserParams, UserEntity } from '@/domain/entities/user'
+import { IUserRepository } from '@/domain/models/contracts/user-repository'
+import { UserModelSchema as Schema } from '@/infrastructure/driven-adapters/adapters/orm/mongoose/models/user'
 
 export class UserMongooseRepositoryAdapter implements IUserRepository {
-    async save(data: AddUserParams): Promise<UserEntity> {
-        return Schema.create(data);
-    }
+  async save(data: AddUserParams): Promise<UserEntity> {
+    return Schema.create(data)
+  }
 }
 ```
 
@@ -351,30 +354,28 @@ export class UserMongooseRepositoryAdapter implements IUserRepository {
 
 ```typescript
 // src/infrastructure/driven-adapters/providers/index.ts
-import {USER_SERVICE} from "@/domain/use-cases/user-service";
-import {USER_REPOSITORY} from "@/domain/models/contracts/user-repository";
-import {UserServiceImpl} from "@/domain/use-cases/impl/user-service-impl";
-import {
-    UserMongooseRepositoryAdapter
-} from "@/infrastructure/driven-adapters/adapters/orm/mongoose/user-mongoose-repository-adapter";
+import { USER_SERVICE } from '@/domain/use-cases/user-service'
+import { USER_REPOSITORY } from '@/domain/models/contracts/user-repository'
+import { UserServiceImpl } from '@/domain/use-cases/impl/user-service-impl'
+import { UserMongooseRepositoryAdapter } from '@/infrastructure/driven-adapters/adapters/orm/mongoose/user-mongoose-repository-adapter'
 
 export const adapters = [
-    {
-        // Constant referring to the interface
-        provide: USER_REPOSITORY,
-        // Class that implements the interface
-        useClass: UserMongooseRepositoryAdapter
-    }
-];
+  {
+    // Constant referring to the interface
+    provide: USER_REPOSITORY,
+    // Class that implements the interface
+    useClass: UserMongooseRepositoryAdapter
+  }
+]
 
 export const services = [
-    {
-        // Constant referring to the interface
-        provide: USER_SERVICE,
-        // Class that implements the interface
-        useClass: UserServiceImpl
-    }
-];
+  {
+    // Constant referring to the interface
+    provide: USER_SERVICE,
+    // Class that implements the interface
+    useClass: UserServiceImpl
+  }
+]
 ```
 
 7. Create controller user
@@ -385,33 +386,34 @@ scaffold create:controller --name=user
 
 ```typescript
 // src/infrastructure/entry-points/api/user-controller.ts
-import {Mapping, Post, Body} from "@tsclean/core";
+import { Mapping, Post, Body } from '@tsclean/core'
 
-import {AddUserParams, ModelUser} from "@/domain/models/user";
-import {IUserService, USER_SERVICE} from "@/domain/use-cases/user-service";
+import { AddUserParams, ModelUser } from '@/domain/models/user'
+import { IUserService, USER_SERVICE } from '@/domain/use-cases/user-service'
 
 @Mapping('api/v1/users')
 export class UserController {
+  constructor(
+    // Decorator to keep the reference of the Interface, by means of the constant.
+    @Adapter(USER_SERVICE)
+    private readonly userService: IUserService
+  ) {}
 
-    constructor(
-        // Decorator to keep the reference of the Interface, by means of the constant.
-        @Adapter(USER_SERVICE)
-        private readonly userService: IUserService
-    ) {}
+  @Post()
+  async saveUserController(
+    @Body() data: AddUserParams
+  ): Promise<ModelUser | any> {
+    // Send the data to the service through the interface.
+    const user = await this.userService.save(data)
 
-    @Post()
-    async saveUserController(@Body() data: AddUserParams): Promise<ModelUser | any> {
-        // Send the data to the service through the interface.
-        const user = await this.userService.save(data);
-
-        return {
-            message: 'User created successfully',
-            user
-        }
+    return {
+      message: 'User created successfully',
+      user
     }
+  }
 }
 ```
 
 8. Finally you can test this endpoint `http://localhost:9000/api/v1/users`, method `POST` in the rest client of your choice and send the corresponding data.
----
 
+---
