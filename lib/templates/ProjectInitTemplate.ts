@@ -190,15 +190,15 @@ services:
 
         if (!packageJsonContent.devDependencies) packageJsonContent.devDependencies = {}
         Object.assign(packageJsonContent.devDependencies, {
-            "@types/node": "^16.9.1",
-            "@types/jest": "^27.0.1",
-            "jest": "^27.5.1",
-            "nodemon": "^2.0.9",
-            "rimraf": "^3.0.2",
-            "ts-jest": "^27.0.5",
-            "ts-node": "^10.2.1",
-            "typescript": "^4.4.3"
-        })
+          "@types/node": "^16.9.1",
+          "@types/jest": "^27.0.1",
+          jest: "^27.5.1",
+          nodemon: "^3.0.1",
+          rimraf: "^3.0.2",
+          "ts-jest": "^27.0.5",
+          "ts-node": "^10.2.1",
+          typescript: "^4.4.3"
+        });
 
         packageJsonContent.dependencies["@tsclean/core"] = "^1.10.13"
         packageJsonContent.dependencies["dotenv"] = "^10.0.0"
