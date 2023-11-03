@@ -1,4 +1,5 @@
 export const CONSTANTS = {
+    MONGO: "mongo",
     MONGOOSE: "mongoose",
     SEQUELIZE: "sequelize",
     MYSQL: "mysql",

@@ -1,319 +1,328 @@
 import ora from "ora";
 import yargs from "yargs";
+import * as fs from "fs";
 
-import {PATHS} from "../utils/paths";
-import {EMOJIS} from "../utils/emojis";
-import {MESSAGES} from "../utils/messages";
-import {CommandUtils} from "./CommandUtils";
-import {CONSTANTS} from "../utils/constants";
-import {banner, errorMessage, executeCommand} from "../utils/helpers";
+import { PATHS } from "../utils/paths";
+import { EMOJIS } from "../utils/emojis";
+import { MESSAGES } from "../utils/messages";
+import { CommandUtils } from "./CommandUtils";
+import { CONSTANTS } from "../utils/constants";
+import { banner, errorMessage, executeCommand } from "../utils/helpers";
+import { DatabaseTemplate } from "../templates/DatabaseTemplate";
+import { AdaptersTemplate } from "../templates/AdaptersTemplate";
+import { ModelsTemplate } from "../templates/ModelsTemplate";
 
 export class AdapterCreateCommand implements yargs.CommandModule {
-    command = "create:adapter-orm";
-    describe = "Generate a new adapter for ORM";
+  command = "create:adapter-orm";
+  describe = "Generate a new adapter for ORM";
 
-    builder(args: yargs.Argv) {
-        return args
-            .option("name", {
-                alias: "n",
-                describe: "Name the adapter",
-                demandOption: true
-            })
-            .option("orm", {
-                alias: "orm",
-                describe: "Orm",
-                demandOption: true
-            })
-            .option("manager", {
-                alias: "mn",
-                describe: "Database manager"
-            })
-    }
+  builder(args: yargs.Argv) {
+    return args
+      .option("name", {
+        alias: "n",
+        describe: "Name the adapter",
+        demandOption: true
+      })
+      .option("orm", {
+        alias: "orm",
+        describe: "Orm",
+        demandOption: true
+      })
+      .option("manager", {
+        alias: "mn",
+        describe: "Database manager",
+        demandOption: true
+      });
+  }
 
-    async handler(args: yargs.Arguments) {
-        let spinner
+  async handler(args: yargs.Arguments) {
+    let spinner;
 
-        try {
+    try {
+      setTimeout(
+        async () => (spinner = ora(CONSTANTS.INSTALLING).start()),
+        1000
+      );
 
-            setTimeout(async () => spinner = ora(CONSTANTS.INSTALLING).start(), 1000)
+      const basePath = PATHS.BASE_PATH_ADAPTER(args.orm as string);
+      const filename = PATHS.FILE_NAME_ADAPTER(
+        args.name as string,
+        args.manager as string,
+        args.orm as string
+      );
 
-            const basePath = PATHS.BASE_PATH_ADAPTER(args.orm);
-            const filename = PATHS.FILE_NAME_ADAPTER(args.name, args.manager, args.orm);
+      // The path for the validation of the file input is made up.
+      const path = `${basePath}${filename}`;
 
-            // The path for the validation of the file input is made up.
-            const path = `${basePath}${filename}`;
+      const base = process.cwd();
 
-            // We validate if the file exists, to throw the exception.
-            const fileExists = await CommandUtils.fileExists(path);
+      // Validate that the entity exists for importing into the ORM adapter.
+      await CommandUtils.readModelFiles(
+        PATHS.PATH_MODELS_ENTITY(),
+        args.name as string
+      );
 
-            // Throw message exception
-            if (fileExists) throw MESSAGES.FILE_EXISTS(path);
+      // Validate that another manager is not implemented.
+      await CommandUtils.readManagerFiles(
+        PATHS.PATH_MODELS_ORM(base, args.orm as string),
+        args.manager as string
+      );
 
-            const base = process.cwd();
+      if (args.orm === CONSTANTS.MONGO || args.orm === CONSTANTS.SEQUELIZE) {
+        // We validate if the file exists, to throw the exception.
+        const fileExists = await CommandUtils.fileExists(path);
 
-            // Validate that the entity exists for importing into the ORM adapter.
-            await CommandUtils.readModelFiles(PATHS.PATH_MODELS_ENTITY(), args.name as string);
+        // Throw message exception
+        if (fileExists) throw MESSAGES.FILE_EXISTS(path);
 
-            // Validate that another manager is not implemented.
-            await CommandUtils.readManagerFiles(PATHS.PATH_MODELS_ORM(base, args.orm), args.manager as string);
+        const filePath = PATHS.PATH_SINGLETON(base);
+        const searchString = "export const singletonInitializers: Array<() => Promise<void>> = [";
+        const arrayCloseString = "];";
 
-            if (args.orm === CONSTANTS.MONGOOSE || args.orm === CONSTANTS.SEQUELIZE) {
-                await CommandUtils.deleteFile(PATHS.PATH_INDEX(base));
-                await CommandUtils.createFile(PATHS.PATH_INDEX(base), AdapterCreateCommand.getTemplateServer(args.name as string, args.orm, args.manager as string));
-                // Adapter
-                await CommandUtils.createFile(PATHS.PATH_ADAPTER(base, args.orm, args.name, args.manager), AdapterCreateCommand.getRepositoryAdapter(args.name as string, args.orm as string, args.manager as string))
-                // Provider
-                // await CommandUtils.createFile(PATHS.PATH_PROVIDER(base), AdapterCreateCommand.generateProvider())
-                // Model
-                await CommandUtils.createFile(PATHS.PATH_MODEL(base, args.orm, args.name, args.manager), AdapterCreateCommand.getModels(args.name as string, args.orm as string, args.manager as string));
-                // Dependencies
-                const packageJsonContents = await CommandUtils.readFile(base + "/package.json");
-                await CommandUtils.createFile(base + "/package.json", AdapterCreateCommand.getPackageJson(packageJsonContents, args.orm as string, args.manager as string));
-                await executeCommand(CONSTANTS.NPM_INSTALL)
+        const fileContent = fs.readFileSync(filePath, "utf8");
 
-                // This message is only displayed in sequelize
-                const env = args.manager ? `${EMOJIS.ROCKET} ${MESSAGES.CONFIG_ENV()}` : "";
+        if (
+          !fileContent.includes(searchString) ||
+          !fileContent.includes(arrayCloseString)
+        )
+          throw MESSAGES.ERROR_UPDATE_INDEX(filePath);
 
-                setTimeout(() => {
-                    spinner.succeed(CONSTANTS.INSTALLATION_COMPLETED)
-                    spinner.stopAndPersist({
-                        symbol: EMOJIS.ROCKET,
-                        text: `${MESSAGES.FILE_SUCCESS(CONSTANTS.ADAPTER, path)}
-${env}`
-                    });
-                }, 1000 * 5);
-            } else {
-                throw MESSAGES.ERROR_ORM(args.orm);
-            }
-        } catch (error) {
-            errorMessage(error, CONSTANTS.ADAPTER)
+        const nameCapitalize = CommandUtils.capitalizeString(
+          args.manager as string
+        );
+
+        const ormCapitalize = CommandUtils.capitalizeString(args.orm as string);
+
+        const ormCodeBlock = getCodeBlockSingleton(
+          args.manager as string,
+          nameCapitalize,
+          ormCapitalize
+        );
+
+        // Declaración de import basada en el ORM
+        const importStatement = getCodeBlockImports(
+          args.manager as string,
+          ormCapitalize
+        );
+
+        if (fileContent.includes(searchString)) {
+          let beforeSearchString = fileContent.split(searchString)[0];
+          const afterSearchString = fileContent.split(searchString)[1];
+
+          // Agrega la declaración de import justo antes del searchString si no existe
+          if (!beforeSearchString.includes(importStatement)) {
+            beforeSearchString += importStatement;
+          }
+
+          // Tu nuevo bloque de código
+          const newCodeBlock = ormCodeBlock
+            .split("\n")
+            .map((line) => "    " + line)
+            .join("\n");
+
+          if (fileContent.includes(arrayCloseString)) {
+            const updatedContent =
+              beforeSearchString +
+              searchString +
+              "\n" +
+              newCodeBlock +
+              "\n" +
+              afterSearchString;
+
+            fs.writeFileSync(filePath, updatedContent, "utf8");
+
+            MESSAGES.UPDATE_INDEX_SUCCESSFULLY(filePath);
+          } else {
+            MESSAGES.ERROR_UPDATE_INDEX(filePath);
+          }
+        } else {
+          MESSAGES.ERROR_UPDATE_INDEX(filePath);
         }
+
+        // Adapter
+        await CommandUtils.createFile(
+          PATHS.PATH_ADAPTER(
+            base,
+            args.orm,
+            args.name as string,
+            args.manager as string
+          ),
+          AdaptersTemplate.getRepositoryAdapter(
+            args.name as string,
+            args.orm as string,
+            args.manager as string
+          )
+        );
+
+        // Model
+        await CommandUtils.createFile(
+          PATHS.PATH_MODEL(
+            base,
+            args.orm,
+            args.name as string,
+            args.manager as string
+          ),
+          ModelsTemplate.getModels(
+            args.name as string,
+            args.orm as string,
+            args.manager as string
+          )
+        );
+        if (args.orm === CONSTANTS.SEQUELIZE) {
+          // Singletons for mysql, pg
+          await CommandUtils.createFile(
+            PATHS.PATH_SINGLETON_INSTANCES(base, args.manager as string),
+            DatabaseTemplate.getMysqlAndPostgresSingleton(
+              args.name as string,
+              args.manager as string
+            )
+          );
+        }
+
+        if (args.orm === CONSTANTS.MONGO) {
+          // Singletons for mongoose
+          await CommandUtils.createFile(
+            PATHS.PATH_SINGLETON_INSTANCES(
+              base,
+              args.manager as string,
+              args.orm as string
+            ),
+            DatabaseTemplate.getMongooseSingleton(args.orm as string)
+          );
+        }
+
+        // Dependencies
+        const packageJsonContents = await CommandUtils.readFile(
+          base + "/package.json"
+        );
+        await CommandUtils.createFile(
+          base + "/package.json",
+          AdapterCreateCommand.getPackageJson(
+            packageJsonContents,
+            args.orm as string,
+            args.manager as string
+          )
+        );
+        await executeCommand(CONSTANTS.NPM_INSTALL);
+
+        // This message is only displayed in sequelize
+        const env = args.manager
+          ? `${EMOJIS.ROCKET} ${MESSAGES.CONFIG_ENV()}`
+          : "";
+
+        setTimeout(() => {
+          spinner.succeed(CONSTANTS.INSTALLATION_COMPLETED);
+          spinner.stopAndPersist({
+            symbol: EMOJIS.ROCKET,
+            text: `${MESSAGES.FILE_SUCCESS(CONSTANTS.ADAPTER, path)}
+${env}`
+          });
+        }, 1000 * 5);
+      } else {
+        throw MESSAGES.ERROR_ORM(args.orm);
+      }
+    } catch (error) {
+      errorMessage(error, CONSTANTS.ADAPTER);
     }
+  }
 
-    /**
-     *
-     * @protected
-     */
-    protected static generateProvider() {
-
-        return `
+  /**
+   *
+   * @protected
+   */
+  protected static generateProvider() {
+    return `
 export const adapters = [];
 
 export const services = [];
         `;
+  }
+
+  /**
+   *
+   * @param dependencies
+   * @param orm
+   * @param manager
+   * @private
+   */
+  private static getPackageJson(
+    dependencies: string,
+    orm: string,
+    manager: string
+  ) {
+    const updatePackages = JSON.parse(dependencies);
+
+    switch (orm) {
+      case CONSTANTS.MONGO:
+        updatePackages.dependencies["mongoose"] = "^8.0.0";
+        break;
+      case CONSTANTS.SEQUELIZE:
+        updatePackages.dependencies["sequelize"] = "^6.33.0";
+        updatePackages.dependencies["sequelize-typescript"] = "^2.1.5";
+        updatePackages.devDependencies["@types/sequelize"] = "^4.28.17";
+        switch (manager) {
+          case CONSTANTS.MYSQL:
+            updatePackages.dependencies["mysql2"] = "^3.6.3";
+            break;
+          case CONSTANTS.POSTGRES:
+            updatePackages.dependencies["pg"] = "^8.11.3";
+            updatePackages.dependencies["pg-hstore"] = "^2.3.4";
+            break;
+          default:
+            break;
+        }
     }
 
-    /**
-     *
-     * @param param
-     * @param orm
-     * @param manager
-     * @protected
-     */
-    protected static getRepositoryAdapter(param: string, orm: string, manager?: string) {
-        const _param = CommandUtils.capitalizeString(param);
-        const _orm = CommandUtils.capitalizeString(orm);
-
-        switch (orm) {
-            case CONSTANTS.MONGOOSE:
-                return `import {${_param}Entity} from "@/domain/entities/${param}";
-import {${_param}ModelSchema} from "@/infrastructure/driven-adapters/adapters/orm/${orm}/models/${param}";
-
-export class ${_param}${_orm}RepositoryAdapter {
-    // Implementation
+    return JSON.stringify(updatePackages, undefined, 3);
+  }
 }
-`
-            case CONSTANTS.SEQUELIZE:
-                if (manager === CONSTANTS.MYSQL || manager === CONSTANTS.POSTGRES) {
-                    const _manager = CommandUtils.capitalizeString(manager);
-                    return `import {${_param}Entity} from "@/domain/entities/${param}";
-import {${_param}Model${_manager}}from "@/infrastructure/driven-adapters/adapters/orm/${orm}/models/${param}-${manager}";
 
-export class ${_param}${_manager}RepositoryAdapter {
-    // Implementation
+/**
+ * Método para incluir la instancia de conexión en el array singletonInitializers
+ * en el archivo index.ts
+ *
+ * @param manager string
+ * @param name string
+ * @param orm string
+ * @returns
+ * ``` typescript
+ * const singletonInitializers: Array<() => Promise<void>> = [
+ *   async () => {
+ *    const mysqlConfig = MysqlConfiguration.getInstance();
+ *    await mysqlConfig.managerConnectionMysql();
+ *  },
+ * ];
+ * ```
+ */
+function getCodeBlockSingleton(
+  manager: string,
+  name: string,
+  orm: string
+): string {
+  const instance = manager === "mongoose" ? orm : name;
+  console.log(instance);
+  return `async () => {
+      const ${manager}Config = ${instance}Configuration.getInstance();
+      await ${manager}Config.managerConnection${instance}();
+},`;
 }
-`
-                } else {
-                    throw MESSAGES.ERROR_DATABASE(manager);
-                }
-        }
 
-    };
+/**
+ * Método para incluir los imports de las instancias, cuando se genera un ORM
+ * en el archivo index.ts
+ *
+ * @param manager Nombre del gestor de base de datos (mysql, pg, mongoose)
+ * @param orm Nombre del orm (sequelize, mongo)
+ *
+ * @returns
+ * ``` typescript
+ * import { MysqlConfiguration } from "@/application/config/mysql-instance";
+ * ```
+ */
+function getCodeBlockImports(manager: string, orm: string): string {
+  const nameCapitalize = CommandUtils.capitalizeString(manager as string);
+  const instance = manager === "mongoose" ? orm : nameCapitalize;
+  return `import { ${instance}Configuration } from "@/application/config/${manager}-instance";
 
-    /**
-     *
-     * @param param
-     * @param orm
-     * @param manager
-     * @protected
-     */
-    protected static getModels(param: string, orm: string, manager?: string) {
-        const _name = CommandUtils.capitalizeString(param);
-
-        switch (orm) {
-            case CONSTANTS.MONGOOSE:
-                return `import { ${_name}Entity } from '@/domain/entities/${param}';
-import { model, Schema } from "mongoose";
-
-const schema = new Schema<${_name}Entity>({
-    // Implementation
-});
-
-export const ${_name}ModelSchema = model<${_name}Entity>('${param}s', schema);
 `;
-            case CONSTANTS.SEQUELIZE:
-                const _manager = CommandUtils.capitalizeString(manager);
-                return `import { Table, Column, Model, Sequelize } from 'sequelize-typescript'
-import { ${_name}Entity } from "@/domain/entities/${param}";
-
-@Table({ tableName: '${param}s' })
-export class ${_name}Model${_manager} extends Model<${_name}Entity> {
-    // Implementation
-}`
-        }
-    }
-
-    /**
-     *
-     * @param dependencies
-     * @param orm
-     * @param manager
-     * @private
-     */
-    private static getPackageJson(dependencies: string, orm: string, manager: string) {
-        const updatePackages = JSON.parse(dependencies);
-
-        switch (orm) {
-            case CONSTANTS.MONGOOSE:
-                updatePackages.dependencies["mongoose"] = "^6.0.10";
-                break;
-            case CONSTANTS.SEQUELIZE:
-                updatePackages.dependencies["sequelize"] = "^6.7.0"
-                updatePackages.dependencies["sequelize-typescript"] = "^2.1.1"
-                updatePackages.devDependencies["@types/sequelize"] = "^4.28.10"
-                switch (manager) {
-                    case CONSTANTS.MYSQL:
-                        updatePackages.dependencies["mysql2"] = "^2.3.1"
-                        break
-                    case CONSTANTS.POSTGRES:
-                        updatePackages.dependencies["pg"] = "^8.7.1"
-                        updatePackages.dependencies["pg-hstore"] = "^2.3.4"
-                        break
-                    default:
-                        break;
-                }
-
-        }
-
-        return JSON.stringify(updatePackages, undefined, 3)
-    }
-
-    private static getTemplateServer(name: string, orm: string, manager?: string) {
-        const _name = CommandUtils.capitalizeString(name);
-
-        switch (orm) {
-            case CONSTANTS.SEQUELIZE:
-                const _manager = CommandUtils.capitalizeString(manager);
-                if (manager === CONSTANTS.MYSQL || manager === CONSTANTS.POSTGRES) {
-                    switch (manager) {
-                        case CONSTANTS.MYSQL:
-                            return `import "module-alias/register";
-
-import helmet from 'helmet';
-
-import { Dialect } from 'sequelize/types';
-import { Sequelize } from 'sequelize-typescript';
-
-import {StartProjectInit} from "@tsclean/core";
-        
-import {AppContainer} from "@/application/app";
-import {PORT, CONFIG_MYSQL} from "@/application/config/environment";
-import {${_name}Model${_manager}} from "@/infrastructure/driven-adapters/adapters/orm/sequelize/models/${name}-${manager}";
-    
-const sequelize = new Sequelize(CONFIG_MYSQL.database, CONFIG_MYSQL.user, CONFIG_MYSQL.password, {
-    dialect: 'mysql',
-    models: [${_name}Model${_manager}],
-});
-
-async function init(): Promise<void> {
-    await sequelize.authenticate()
-    console.log("DB mysql")
-    const app = await StartProjectInit.create(AppContainer)
-    app.use(helmet());
-    await app.listen(PORT, () => console.log('Running on port ' + PORT))
-}
-   
-void init().catch((err) => console.log(err));`
-                        case CONSTANTS.POSTGRES:
-
-                            return `import "module-alias/register";
-
-import helmet from 'helmet';
-
-import { Dialect } from 'sequelize/types';
-import { Sequelize } from 'sequelize-typescript';
-
-import {StartProjectInit} from "@tsclean/core";
-        
-import {AppContainer} from "@/application/app";
-import {PORT, CONFIG_POSTGRES} from "@/application/config/environment";
-import {${_name}Model${_manager}} from "@/infrastructure/driven-adapters/adapters/orm/sequelize/models/${name}-${manager}";
-
-const sequelize = new Sequelize(CONFIG_POSTGRES.database, CONFIG_POSTGRES.user, CONFIG_POSTGRES.password, {
-    dialect: 'postgres',
-    models: [${_name}Model${_manager}],
-    define: {
-        timestamps: false
-    },
-    pool: {
-        max: 5,
-        min: 0,
-        acquire: 30000,
-        idle: 10000
-    }
-});
-
-async function init(): Promise<void> {
-    await sequelize.authenticate()
-    console.log("DB postgres")
-    const app = await StartProjectInit.create(AppContainer)
-    app.use(helmet());
-    await app.listen(PORT, () => console.log('Running on port ' + PORT))
-}
-   
-void init().catch((err) => console.log(err));`
-
-                    }
-                } else {
-                    throw MESSAGES.ERROR_DATABASE(manager);
-                }
-                break
-            case CONSTANTS.MONGOOSE:
-                return `import 'module-alias/register'
-
-import helmet from 'helmet';
-import { connect, set } from 'mongoose'
-import { StartProjectInit } from "@tsclean/core";
-
-import { AppContainer } from "@/application/app";
-import {MONGODB_URI, PORT} from "@/application/config/environment";
-
-async function managerConnectionMongo (): Promise<void> {
-  set('strictQuery', true)
-  await connect(MONGODB_URI)
-}
-
-async function init(): Promise<void> {
- await managerConnectionMongo().then(() =>
-    console.log("Connection successfully to database of Mongo: " + MONGODB_URI)
-  )
-   const app = await StartProjectInit.create(AppContainer);
-   app.use(helmet());
-   await app.listen(PORT, () => console.log('Running on port: ' + PORT))
-}
-
-void init().catch((err) => console.log(err));
-`
-        }
-    }
 }

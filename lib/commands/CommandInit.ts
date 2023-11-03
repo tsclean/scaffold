@@ -8,6 +8,7 @@ import { MESSAGES } from "../utils/messages";
 import { CommandUtils } from "./CommandUtils";
 import { errorMessage, structureInitialProject } from "../utils/helpers";
 import { ProjectInitTemplate } from "../templates/ProjectInitTemplate";
+import { PATHS } from "../utils/paths";
 
 export class InitCommand implements yargs.CommandModule {
   command = "create:project";
@@ -84,6 +85,10 @@ export class InitCommand implements yargs.CommandModule {
       await CommandUtils.createFile(
         basePath + "/src/application/app.ts",
         ProjectInitTemplate.getAppTemplate()
+      );
+      await CommandUtils.createFile(
+        PATHS.PATH_SINGLETON(basePath),
+        ProjectInitTemplate.getSingleton()
       );
       await CommandUtils.createFile(
         basePath + "/src/index.ts",

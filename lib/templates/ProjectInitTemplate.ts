@@ -60,7 +60,7 @@ export const MONGODB_URI = PROD
 /**
  * Postgres
  */
-export const CONFIG_POSTGRES = {
+export const CONFIG_PG = {
     host        : process.env.DB_HOST_POSTGRES,
     user        : process.env.DB_USER_POSTGRES,
     database    : process.env.DATABASE_POSTGRES,
@@ -150,8 +150,8 @@ dist
   static getDockerCompose() {
     return `version: '3.1'
 services:
-    # Api Service
-    api:
+# Api Service
+  api:
     build:
         context: .
         dockerfile: ./src/deployment/Dockerfile
@@ -162,55 +162,108 @@ services:
         - "9000:9000"
     environment:
         - NODE_ENV=development
-        - PORT=9009
+        - PORT=9000
     command: sh -c 'npm install && npm run watch'
     networks:
         - api-network
 
-    # MySQL Service
-    mysql:
-    image: mysql:8.0
-    container_name: mysql
-    command: --default-authentication-plugin=mysql_native_password
-    restart: always
-    ports:
-        - \${DB_PORT_MYSQL}:3306
-    environment:
-        MYSQL_DATABASE: \${DATABASE_MYSQL}
-        MYSQL_ROOT_PASSWORD: \${DB_PASSWORD_MYSQL}
-        MYSQL_PASSWORD: \${DB_PASSWORD_MYSQL}
-        MYSQL_USER: \${DB_USER_MYSQL}
-        SERVICE_TAGS: dev
-        SERVICE_NAME: mysql
-    networks:
-        - api-network
+#   # MySQL Service
+#   mysql:
+#     image: mysql:8.0
+#     container_name: mysql
+#     command: --default-authentication-plugin=mysql_native_password
+#     restart: always
+#     ports:
+#       - \${DB_PORT_MYSQL}:3306
+#     environment:
+#       MYSQL_DATABASE: \${DATABASE_MYSQL}
+#       MYSQL_ROOT_PASSWORD: \${DB_PASSWORD_MYSQL}
+#       MYSQL_PASSWORD: \${DB_PASSWORD_MYSQL}
+#       MYSQL_USER: \${DB_USER_MYSQL}
+#       SERVICE_TAGS: dev
+#       SERVICE_NAME: mysql
+#     volumes:
+#       - mysql_data:/var/lib/mysql
+#     networks:
+#       - api_network
 
-    # Mongo Service
-    mongo:
-    image: mongo
-    restart: always
-    container_name: mongo
-    ports:
-        - "27017:27017"
-    networks:
-        - api-network
+#   # Mongo Service
+#   mongo:
+#     image: mongo
+#     restart: always
+#     container_name: mongo
+#     ports:
+#       - "27017:27017"
+#     volumes:
+#       - mongo_db:/data/db
+#       - mongo_config:/data/config
+#     networks:
+#       - api_network
 
-    # Pg Service
-    postgres:
-    image: postgres:latest
-    container_name: api_postgres
-    environment:
-        POSTGRES_USER: \${DB_USER_POSTGRES}
-        POSTGRES_PASSWORD: \${DB_PASSWORD_POSTGRES}
-        POSTGRES_DB: \${DATABASE_POSTGRES}
-    ports:
-        - \${DB_PORT_POSTGRES}:5432
-    networks:
-        - api-network
+#   # Pg Service
+#   postgres:
+#     image: postgres:latest
+#     container_name: api_postgres
+#     environment:
+#       POSTGRES_USER: \${DB_USER_POSTGRES}
+#       POSTGRES_PASSWORD: \${DB_PASSWORD_POSTGRES}
+#       POSTGRES_DB: \${DATABASE_POSTGRES}
+#     ports:
+#       - \${DB_PORT_POSTGRES}:5432
+#     volumes:
+#       - postgres_db:/var/lib/postgresql/data
+#     networks:
+#       - api_network
+
+#   # pgAdmin Service
+#   pgadmin:
+#     image: dpage/pgadmin4:latest
+#     environment:
+#       PGADMIN_DEFAULT_EMAIL: admin@example.com # Change to the email you want to use to login to pgAdmin
+#       PGADMIN_DEFAULT_PASSWORD: admin # Change to the password you want to use to login to pgAdmin
+#     ports:
+#       - "5050:80"
+#     depends_on:
+#       - postgres
+#     networks:
+#       - api_network
+
+#   # phpAdmin Service
+#   phpmyadmin:
+#     image: phpmyadmin
+#     depends_on:
+#       - mysql
+#     environment:
+#       - UPLOAD_LIMIT=200M
+#       - POST_MAX_SIZE=200M
+#       - PHP_UPLOAD_MAX_FILESIZE=200M
+#     ports:
+#       - "8080:80"
+#     networks:
+#       - api_network
+
+#   # mongoexpress Service
+#   mongoexpress:
+#     image: mongo-express
+#     ports:
+#       - "8081:8081"
+#     depends_on:
+#       - mongo
+#     environment:
+#       ME_CONFIG_MONGODB_URL: mongodb://mongo:27017/
+#     networks:
+#       - api_network
+
+# volumes:
+#   mysql_data:
+#   mongo_db:
+#   mongo_config:
+#   postgres_db:
 
 networks:
-    api-network:
-    driver: bridge`;
+  api-network:
+    driver: bridge
+    `;
   }
 
   /**
@@ -227,7 +280,8 @@ networks:
         scripts: {},
         dependencies: {},
         devDependencies: {},
-        _moduleAliases: {}
+        _moduleAliases: {},
+        engines: {}
       },
       undefined,
       3
@@ -245,20 +299,20 @@ networks:
     if (!packageJsonContent.devDependencies)
       packageJsonContent.devDependencies = {};
     Object.assign(packageJsonContent.devDependencies, {
-      "@types/node": "^16.9.1",
-      "@types/jest": "^27.0.1",
-      jest: "^27.5.1",
+      "@types/node": "^20.8.10",
+      "@types/jest": "^29.5.7",
+      jest: "^29.7.0",
       nodemon: "^3.0.1",
-      rimraf: "^3.0.2",
-      "ts-jest": "^27.0.5",
-      "ts-node": "^10.2.1",
-      typescript: "^4.4.3"
+      rimraf: "^5.0.5",
+      "ts-jest": "^29.1.1",
+      "ts-node": "^10.9.1",
+      typescript: "^5.2.2"
     });
 
     packageJsonContent.dependencies["@tsclean/core"] = "^1.10.13";
-    packageJsonContent.dependencies["dotenv"] = "^10.0.0";
-    packageJsonContent.dependencies["helmet"] = "^4.6.0";
-    packageJsonContent.dependencies["module-alias"] = "^2.2.2";
+    packageJsonContent.dependencies["dotenv"] = "^16.3.1";
+    packageJsonContent.dependencies["helmet"] = "^7.0.0";
+    packageJsonContent.dependencies["module-alias"] = "^2.2.3";
 
     packageJsonContent.scripts["start"] = "node ./dist/index.js";
     packageJsonContent.scripts["build"] =
@@ -267,6 +321,7 @@ networks:
       'nodemon --exec "npm run build && npm run start" --watch src --ext ts';
 
     packageJsonContent._moduleAliases["@"] = "dist";
+    packageJsonContent.engines["node"] = ">=19.9.0";
 
     return JSON.stringify(packageJsonContent, undefined, 3);
   }
@@ -324,15 +379,21 @@ PORT=9000`;
     return `import "module-alias/register";
 
 import helmet from 'helmet';
-import {StartProjectInit} from "@tsclean/core";
+import { StartProjectInit } from "@tsclean/core";
         
-import {AppContainer} from "@/application/app";
-import {PORT} from "@/application/config/environment";
-    
+import { AppContainer } from "@/application/app";
+import { PORT } from "@/application/config/environment";
+import { singletonInitializers } from "@/application/singleton";
+
 async function init(): Promise<void> {
-    const app = await StartProjectInit.create(AppContainer)
-    app.use(helmet());
-    await app.listen(PORT, () => console.log('Running on port ' + PORT))
+  // Iteramos sobre las funciones de inicialización.
+  for (const initFn of singletonInitializers) {
+    await initFn();
+  }
+
+  const app = await StartProjectInit.create(AppContainer)
+  app.use(helmet());
+  await app.listen(PORT, () => console.log(\`Running on port: \${PORT}\`))
 }
    
 void init().catch();`;
@@ -343,7 +404,7 @@ void init().catch();`;
   }
 
   static getDockerfileTemplate(): string {
-    return `FROM node:18-alpine3.14
+    return `FROM node:19.9.0
 
 WORKDIR /app
 
@@ -365,6 +426,22 @@ CMD ["nodemon", "/dist/index.js"]
     return `export const adapters = [];
         
 export const services = [];`;
+  }
+
+  /**
+   * Metodo para crear un array donde se alojarán los singletons de la aplicación
+   *
+   * @returns
+   * ```typescript
+   * export const singletonInitializers: Array<() => Promise<void>> = [];
+   * ```
+   */
+  public static getSingleton(): string {
+    return `/**
+   * This array has all the singleton instances of the application
+   */
+  export const singletonInitializers: Array<() => Promise<void>> = [];
+      `;
   }
 
   static getAdaptersIndex() {

@@ -130,7 +130,7 @@ the tasks.
 - command to generate the mongoose orm.
 
 ```shell
-   scaffold create:adapter-orm --name=user --orm=mongoose
+   scaffold create:adapter-orm --name=user --orm=mongo --manager=mongoose
 ```
 
 ## Adapter Simple Generation
