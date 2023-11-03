@@ -1,11 +1,10 @@
 export class ProjectInitTemplate {
-
-    /**
-     * Get contents of environment.ts file
-     * @returns
-     */
-    static getEnvironmentTemplate(): string {
-        return `import dotenv from "dotenv";
+  /**
+   * Get contents of environment.ts file
+   * @returns
+   */
+  static getEnvironmentTemplate(): string {
+    return `import dotenv from "dotenv";
 
 dotenv.config({ path: ".env" })
 
@@ -44,10 +43,11 @@ export const SESSION_SECRET = process.env.JWT_SECRET || ""
 *  MySQL
 */
 export const CONFIG_MYSQL = {
-    host     : process.env.HOST,
-    user     : process.env.DB_USER,
-    password : process.env.DB_PASSWORD,
-    database : process.env.DATABASE
+    host     : process.env.DB_HOST_MYSQL,
+    user     : process.env.DB_USER_MYSQL,
+    password : process.env.DB_PASSWORD_MYSQL,
+    database : process.env.DATABASE_MYSQL,
+    port     : process.env.DB_PORT_MYSQL
 }
 
 /**
@@ -61,22 +61,21 @@ export const MONGODB_URI = PROD
  * Postgres
  */
 export const CONFIG_POSTGRES = {
-    host    : process.env.HOST,
-    user    : process.env.DB_USER_POSTGRES,
-    database: process.env.DATABASE_POSTGRES,
-    password: process.env.DB_PASSWORD_POSTGRES,
-    port: 5432,
+    host        : process.env.DB_HOST_POSTGRES,
+    user        : process.env.DB_USER_POSTGRES,
+    database    : process.env.DATABASE_POSTGRES,
+    password    : process.env.DB_PASSWORD_POSTGRES,
+    port        : process.env.DB_PORT_POSTGRES,
 }
-`
+`;
+  }
 
-    }
-
-    /**
-     * Gets content of the app.ts file
-     * @returns
-     */
-    static getAppTemplate(): string {
-        return `import {Container} from "@tsclean/core";
+  /**
+   * Gets content of the app.ts file
+   * @returns
+   */
+  static getAppTemplate(): string {
+    return `import {Container} from "@tsclean/core";
 import {controllers} from "@/infrastructure/entry-points/api";
 import {services, adapters} from "@/infrastructure/driven-adapters/providers";
 
@@ -86,158 +85,225 @@ import {services, adapters} from "@/infrastructure/driven-adapters/providers";
 })
 
 export class AppContainer {}
-`
-    }
+`;
+  }
 
-    /**
-     * Get contents of tsconfig.json file
-     * @returns
-     */
-    static getTsConfigTemplate(): string {
-        return JSON.stringify({
-            "compilerOptions": {
-                "experimentalDecorators": true,
-                "emitDecoratorMetadata": true,
-                "outDir": "./dist",
-                "module": "commonjs",
-                "target": "es2019",
-                "esModuleInterop": true,
-                "sourceMap": true,
-                "rootDirs": ["src", "tests"],
-                "baseUrl": "src",
-                "paths": {
-                    "@/tests/*": ["../tests/*"],
-                    "@/*": ["*"]
-                },
-            },
-            "include": ["src", "tests"],
-            "exclude": []
-        }, undefined, 3)
-    }
+  /**
+   * Get contents of tsconfig.json file
+   * @returns
+   */
+  static getTsConfigTemplate(): string {
+    return JSON.stringify(
+      {
+        compilerOptions: {
+          experimentalDecorators: true,
+          emitDecoratorMetadata: true,
+          outDir: "./dist",
+          module: "commonjs",
+          target: "es2019",
+          esModuleInterop: true,
+          sourceMap: true,
+          rootDirs: ["src", "tests"],
+          baseUrl: "src",
+          paths: {
+            "@/tests/*": ["../tests/*"],
+            "@/*": ["*"]
+          }
+        },
+        include: ["src", "tests"],
+        exclude: []
+      },
+      undefined,
+      3
+    );
+  }
 
-    /**
-     * Gets contents of the new readme.md file.
-     * @returns
-     */
-    static getReadmeTemplate(): string {
-        return `## Awesome Project Build with Clean Architecture
+  /**
+   * Gets contents of the new readme.md file.
+   * @returns
+   */
+  static getReadmeTemplate(): string {
+    return `## Awesome Project Build with Clean Architecture
 
 Steps to run this project:
 
 1. Run \`npm watch\` command
 
-`
-    }
+`;
+  }
 
-    /**
-     *
-     * @returns
-     */
-    static getGitIgnoreFile(): string {
-        return `.idea/
+  /**
+   *
+   * @returns
+   */
+  static getGitIgnoreFile(): string {
+    return `.idea/
 .vscode/
 node_modules/
 build/
 .env
 package-lock.json
 dist
-        `
-    }
+        `;
+  }
 
-    static getDockerCompose() {
-        return `version: '3.1'
+  static getDockerCompose() {
+    return `version: '3.1'
 services:
-  api:
+    # Api Service
+    api:
     build:
-      context: .
-      dockerfile: ./src/deployment/Dockerfile
+        context: .
+        dockerfile: ./src/deployment/Dockerfile
     volumes:
-      - ./:/app
-      - /app/node_modules
+        - ./:/app
+        - /app/node_modules
     ports:
-      - "9000:9000"
+        - "9000:9000"
     environment:
-      - NODE_ENV=development
-      - PORT=9000
-    command: "npm run watch"`;
+        - NODE_ENV=development
+        - PORT=9009
+    command: sh -c 'npm install && npm run watch'
+    networks:
+        - api-network
 
-    }
+    # MySQL Service
+    mysql:
+    image: mysql:8.0
+    container_name: mysql
+    command: --default-authentication-plugin=mysql_native_password
+    restart: always
+    ports:
+        - \${DB_PORT_MYSQL}:3306
+    environment:
+        MYSQL_DATABASE: \${DATABASE_MYSQL}
+        MYSQL_ROOT_PASSWORD: \${DB_PASSWORD_MYSQL}
+        MYSQL_PASSWORD: \${DB_PASSWORD_MYSQL}
+        MYSQL_USER: \${DB_USER_MYSQL}
+        SERVICE_TAGS: dev
+        SERVICE_NAME: mysql
+    networks:
+        - api-network
 
-    /**
-     * Gets contents of the package.json file.
-     * @param projectName
-     * @returns
-     */
-    static getPackageJsonTemplate(projectName?: string): string {
-        return JSON.stringify({
-            name: projectName || "clean-architecture",
-            version: "1.0.0",
-            description: "Awesome project developed with Clean Architecture",
-            scripts: {},
-            dependencies: {},
-            devDependencies: {},
-            _moduleAliases: {}
-        }, undefined, 3)
-    }
+    # Mongo Service
+    mongo:
+    image: mongo
+    restart: always
+    container_name: mongo
+    ports:
+        - "27017:27017"
+    networks:
+        - api-network
 
-    /**
-     * Appends to a given package.json template everything needed.
-     * @param packageJson
-     * @returns
-     */
-    static appendPackageJson(packageJson: string): string {
-        const packageJsonContent = JSON.parse(packageJson)
+    # Pg Service
+    postgres:
+    image: postgres:latest
+    container_name: api_postgres
+    environment:
+        POSTGRES_USER: \${DB_USER_POSTGRES}
+        POSTGRES_PASSWORD: \${DB_PASSWORD_POSTGRES}
+        POSTGRES_DB: \${DATABASE_POSTGRES}
+    ports:
+        - \${DB_PORT_POSTGRES}:5432
+    networks:
+        - api-network
 
-        if (!packageJsonContent.devDependencies) packageJsonContent.devDependencies = {}
-        Object.assign(packageJsonContent.devDependencies, {
-          "@types/node": "^16.9.1",
-          "@types/jest": "^27.0.1",
-          "jest": "^27.5.1",
-          "nodemon": "^3.0.1",
-          "rimraf": "^3.0.2",
-          "ts-jest": "^27.0.5",
-          "ts-node": "^10.2.1",
-          "typescript": "^4.4.3"
-        });
+networks:
+    api-network:
+    driver: bridge`;
+  }
 
-        packageJsonContent.dependencies["@tsclean/core"] = "^1.10.13"
-        packageJsonContent.dependencies["dotenv"] = "^10.0.0"
-        packageJsonContent.dependencies["helmet"] = "^4.6.0"
-        packageJsonContent.dependencies["module-alias"] = "^2.2.2"
+  /**
+   * Gets contents of the package.json file.
+   * @param projectName
+   * @returns
+   */
+  static getPackageJsonTemplate(projectName?: string): string {
+    return JSON.stringify(
+      {
+        name: projectName || "clean-architecture",
+        version: "1.0.0",
+        description: "Awesome project developed with Clean Architecture",
+        scripts: {},
+        dependencies: {},
+        devDependencies: {},
+        _moduleAliases: {}
+      },
+      undefined,
+      3
+    );
+  }
 
-        packageJsonContent.scripts["start"] = "node ./dist/index.js"
-        packageJsonContent.scripts["build"] = "rimraf dist && tsc -p tsconfig-build.json"
-        packageJsonContent.scripts["watch"] = "nodemon --exec \"npm run build && npm run start\" --watch src --ext ts"
+  /**
+   * Appends to a given package.json template everything needed.
+   * @param packageJson
+   * @returns
+   */
+  static appendPackageJson(packageJson: string): string {
+    const packageJsonContent = JSON.parse(packageJson);
 
-        packageJsonContent._moduleAliases["@"] = "dist"
+    if (!packageJsonContent.devDependencies)
+      packageJsonContent.devDependencies = {};
+    Object.assign(packageJsonContent.devDependencies, {
+      "@types/node": "^16.9.1",
+      "@types/jest": "^27.0.1",
+      jest: "^27.5.1",
+      nodemon: "^3.0.1",
+      rimraf: "^3.0.2",
+      "ts-jest": "^27.0.5",
+      "ts-node": "^10.2.1",
+      typescript: "^4.4.3"
+    });
 
-        return JSON.stringify(packageJsonContent, undefined, 3)
-    }
+    packageJsonContent.dependencies["@tsclean/core"] = "^1.10.13";
+    packageJsonContent.dependencies["dotenv"] = "^10.0.0";
+    packageJsonContent.dependencies["helmet"] = "^4.6.0";
+    packageJsonContent.dependencies["module-alias"] = "^2.2.2";
 
-    static getEnvExampleTemplate() {
-        return `# Mongo configuration
+    packageJsonContent.scripts["start"] = "node ./dist/index.js";
+    packageJsonContent.scripts["build"] =
+      "rimraf dist && tsc -p tsconfig-build.json";
+    packageJsonContent.scripts["watch"] =
+      'nodemon --exec "npm run build && npm run start" --watch src --ext ts';
+
+    packageJsonContent._moduleAliases["@"] = "dist";
+
+    return JSON.stringify(packageJsonContent, undefined, 3);
+  }
+
+  static getEnvExampleTemplate() {
+    return `# Mongo configuration
+# If you run the project with the local configuration [docker-compose.yml],
+# the host will be the Mongo container name
 MONGO_DEVELOPMENT=
 MONGO_PRODUCTION=
 
 # Mysql configuration
-DB_USER=
-DB_PASSWORD=
-DATABASE=
+DB_USER_MYSQL=
+DB_PASSWORD_MYSQL=
+DATABASE_MYSQL=
+DB_PORT_MYSQL=
+# If you run the project with the local configuration [docker-compose.yml],
+# the host will be the MySQL container name
+DB_HOST_MYSQL=
 
 # Postgres configuration
 DB_USER_POSTGRES=
 DATABASE_POSTGRES=
 DB_PASSWORD_POSTGRES=
 DB_PORT_POSTGRES=
+# If you run the project with the local configuration [docker-compose.yml],
+# the host will be the postgres container name
+DB_HOST_POSTGRES=
 
 JWT_SECRET=
 NODE_ENV=development
 HOST=127.0.0.1
-PORT=9000`
-    }
+PORT=9000`;
+  }
 
-    static getTsConfigBuildTemplate() {
-        return `{
+  static getTsConfigBuildTemplate() {
+    return `{
   "extends": "./tsconfig.json",
   "exclude": [
     "coverage",
@@ -246,16 +312,16 @@ PORT=9000`
     "**/*.test.ts",
     "**/tests"
   ]
-}`
-    }
+}`;
+  }
 
-    static getDockerIgnore() {
-        return `Dockerfile
- node_modules`
-    }
+  static getDockerIgnore() {
+    return `Dockerfile
+ node_modules`;
+  }
 
-    static getIndexTemplate() {
-        return `import "module-alias/register";
+  static getIndexTemplate() {
+    return `import "module-alias/register";
 
 import helmet from 'helmet';
 import {StartProjectInit} from "@tsclean/core";
@@ -269,15 +335,15 @@ async function init(): Promise<void> {
     await app.listen(PORT, () => console.log('Running on port ' + PORT))
 }
    
-void init().catch();`
-    }
+void init().catch();`;
+  }
 
-    static getIndexApiTemplate() {
-        return `export const controllers = [];`;
-    }
+  static getIndexApiTemplate() {
+    return `export const controllers = [];`;
+  }
 
-    static getDockerfileTemplate(): string {
-        return `FROM node:18-alpine3.14
+  static getDockerfileTemplate(): string {
+    return `FROM node:18-alpine3.14
 
 WORKDIR /app
 
@@ -293,23 +359,23 @@ EXPOSE 9000
 
 CMD ["nodemon", "/dist/index.js"]
         `;
-    }
+  }
 
-    static getProvidersTemplate(): string {
-        return `export const adapters = [];
+  static getProvidersTemplate(): string {
+    return `export const adapters = [];
         
-export const services = [];`
-    }
+export const services = [];`;
+  }
 
-    static getAdaptersIndex() {
-        return ``;
-    }
+  static getAdaptersIndex() {
+    return ``;
+  }
 
-    static getDrivenAdaptersIndex() {
-        return ``;
-    }
+  static getDrivenAdaptersIndex() {
+    return ``;
+  }
 
-    static getEntryPointsTemplate() {
-        return ``;
-    }
+  static getEntryPointsTemplate() {
+    return ``;
+  }
 }

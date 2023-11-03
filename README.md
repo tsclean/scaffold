@@ -115,10 +115,16 @@ the tasks.
 2. By convention the plugin handles names in singular, this helps to create additional code that benefits each component.
    In this case when you create the adapter with the name that matches the entity in the domain models folder, it does the automatic import in all the component of the adapter.
 
-- command to generate sequelize orm.
+- command to generate a `mysql' adapter with sequelize orm.
 
 ```shell
    scaffold create:adapter-orm --name=user --orm=sequelize --manager=mysql
+```
+
+- command to generate a postgres adapter with sequelize orm
+
+```shell
+   scaffold create:adapter-orm --name=user --orm=sequelize --manager=pg
 ```
 
 - command to generate the mongoose orm.
