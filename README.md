@@ -12,9 +12,9 @@ This CLI creates the structure of a NodeJs and TypeScript project based on clean
   - [Service Generation](#service-generation)
   - [Service Resource Generation](#service-resource-generation)
   - [Adapter ORM Generation](#adapter-orm-generation)
+  - [Singleton Instances](#singleton-instances)
   - [Adapter Simple Generation](#adapter-simple-generation)
   - [Controller Generate](#controller-generation)
-  - [Singleton Instances](#singleton-instances)
   - [Decorators](#decorators)
   - [Example of use case](#example-of-use-case)
 
@@ -142,28 +142,28 @@ Example: When the adapter is created for postgres, the Singleton class is genera
 
 ```typescript
 // src/application/config/pg-instance.ts
-import { Sequelize } from "sequelize-typescript";
-import { Logger } from "@tsclean/core";
-import { CONFIG_PG } from "@/application/config/environment";
-import { UserModelPg } from "@/infrastructure/driven-adapters/adapters/orm/sequelize/models/user-pg";
+import { Sequelize } from 'sequelize-typescript'
+import { Logger } from '@tsclean/core'
+import { CONFIG_PG } from '@/application/config/environment'
+import { UserModelPg } from '@/infrastructure/driven-adapters/adapters/orm/sequelize/models/user-pg'
 
 /**
  * Class that generates a connection instance for Pg using the Singleton pattern
  */
 export class PgConfiguration {
   /** Private logger instance for logging purposes */
-  private logger: Logger;
+  private logger: Logger
 
   /** Private static instance variable to implement the Singleton pattern */
-  private static instance: PgConfiguration;
+  private static instance: PgConfiguration
 
   /** Sequelize instance for managing the PostgreSQL database connection */
-  public sequelize: Sequelize;
+  public sequelize: Sequelize
 
   /** Private constructor to ensure that only one instance is created */
   private constructor() {
     /** Initialize the logger with the class name */
-    this.logger = new Logger(PgConfiguration.name);
+    this.logger = new Logger(PgConfiguration.name)
 
     /** Create a new Sequelize instance with the provided configuration */
     this.sequelize = new Sequelize(
@@ -172,42 +172,42 @@ export class PgConfiguration {
       CONFIG_PG.password,
       {
         host: CONFIG_PG.host,
-        dialect: "postgres",
+        dialect: 'postgres',
         /** This array contains all the system models that are used for Pg. */
-        models: [
-          UserModelPg
-        ]
+        models: [UserModelPg]
       }
-    );
+    )
   }
 
   /** Method to get the instance of the class, following the Singleton pattern */
   public static getInstance(): PgConfiguration {
     if (!PgConfiguration.instance) {
-      PgConfiguration.instance = new PgConfiguration();
+      PgConfiguration.instance = new PgConfiguration()
     }
-    return PgConfiguration.instance;
+    return PgConfiguration.instance
   }
 
   /** Asynchronous method to manage the PostgreSQL database connection */
   public async managerConnectionPg(): Promise<void> {
     try {
       /** Attempt to authenticate the connection to the database */
-      await this.sequelize.authenticate();
+      await this.sequelize.authenticate()
       /** Log a success message if the authentication is successful */
       this.logger.log(
         `Connection successfully to database of Pg: ${CONFIG_PG.database}`
-      );
+      )
     } catch (error) {
       /** Log an error message if the authentication fails */
-      this.logger.error("Failed to connect to Pg", error);
+      this.logger.error('Failed to connect to Pg', error)
     }
   }
 }
+```
 
+Note: Here you can declare all the Singleton instances that the application uses.
+
+```typescript
 // src/application/singleton.ts
-import { MongoConfiguration } from '@/application/config/mongoose-instance'
-import { MysqlConfiguration } from '@/application/config/mysql-instance'
 import { PgConfiguration } from '@/application/config/pg-instance'
 
 /**
@@ -346,7 +346,7 @@ scaffold create:interface --name=user --path=entities
 ```
 
 ```typescript
-// src/domain/models/contracts/user-repository.ts
+// src/domain/entities/contracts/user-repository.ts
 import { AddUserParams, UserModel } from '@/domain/entities/user'
 
 export const USER_REPOSITORY = 'USER_REPOSITORY'
@@ -405,7 +405,7 @@ export class UserServiceImpl implements IUserService {
 5. Create mongoose adapter and additionally you must include the url of the connection in the `.env` file
 
 ```shell
-scaffold create:adapter-orm --name=user --orm=mongoose
+scaffold create:adapter-orm --name=user --orm=mongo --manager=mongoose
 ```
 
 ```typescript
@@ -442,6 +442,85 @@ export class UserMongooseRepositoryAdapter implements IUserRepository {
     return Schema.create(data)
   }
 }
+```
+
+5.1 The `scaffold` automatically generates the connection instance
+
+```typescript
+// src/application/config/mongoose-instance.ts
+import { connect, set } from 'mongoose'
+import { Logger } from '@tsclean/core'
+import { MONGODB_URI } from '@/application/config/environment'
+
+export class MongoConfiguration {
+  private logger: Logger
+  private static instance: MongoConfiguration
+
+  private constructor() {
+    this.logger = new Logger(MongoConfiguration.name)
+  }
+
+  public static getInstance(): MongoConfiguration {
+    if (!this.instance) {
+      this.instance = new MongoConfiguration()
+    }
+    return this.instance
+  }
+
+  public async managerConnectionMongo(): Promise<void> {
+    set('strictQuery', true)
+
+    try {
+      await connect(MONGODB_URI)
+      this.logger.log(
+        `Connection successfully to database of Mongo: ${MONGODB_URI}`
+      )
+    } catch (error) {
+      this.logger.error('Failed to connect to MongoDB', error)
+    }
+  }
+}
+```
+
+5.2 The `scaffold` also includes the function in the array of singleton instances.
+
+```typescript
+// src/application/singleton.ts
+import { MongoConfiguration } from '@/application/config/mongoose-instance'
+
+/** This array has all the singleton instances of the application */
+export const singletonInitializers: Array<() => Promise<void>> = [
+  async () => {
+    const pgConfig = PgConfiguration.getInstance()
+    await pgConfig.managerConnectionPg()
+  }
+]
+```
+
+5.3 These instances are called in the `index.ts`.
+
+```typescript
+import 'module-alias/register'
+
+import helmet from 'helmet'
+import { StartProjectInit } from '@tsclean/core'
+
+import { AppContainer } from '@/application/app'
+import { PORT } from '@/application/config/environment'
+import { singletonInitializers } from '@/application/singleton'
+
+async function init(): Promise<void> {
+  /** Iterate the singleton functions */
+  for (const initFn of singletonInitializers) {
+    await initFn()
+  }
+
+  const app = await StartProjectInit.create(AppContainer)
+  app.use(helmet())
+  await app.listen(PORT, () => console.log(`Running on port: ${PORT}`))
+}
+
+void init().catch()
 ```
 
 6. Pass the key:value to do the dependency injections
