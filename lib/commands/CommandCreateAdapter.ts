@@ -1,5 +1,6 @@
 import ora from "ora";
 import yargs from "yargs";
+import ts from "typescript";
 import * as fs from "fs";
 
 import { PATHS } from "../utils/paths";
@@ -57,13 +58,13 @@ export class AdapterCreateCommand implements yargs.CommandModule {
       const base = process.cwd();
 
       // Validate that the entity exists for importing into the ORM adapter.
-      await CommandUtils.readModelFiles(
+      CommandUtils.readModelFiles(
         PATHS.PATH_MODELS_ENTITY(),
         args.name as string
       );
 
       // Validate that another manager is not implemented.
-      await CommandUtils.readManagerFiles(
+      CommandUtils.readManagerFiles(
         PATHS.PATH_MODELS_ORM(base, args.orm as string),
         args.manager as string
       );
@@ -76,69 +77,7 @@ export class AdapterCreateCommand implements yargs.CommandModule {
         if (fileExists) throw MESSAGES.FILE_EXISTS(path);
 
         const filePath = PATHS.PATH_SINGLETON(base);
-        const searchString = "export const singletonInitializers: Array<() => Promise<void>> = [";
-        const arrayCloseString = "];";
-
-        const fileContent = fs.readFileSync(filePath, "utf8");
-
-        if (
-          !fileContent.includes(searchString) ||
-          !fileContent.includes(arrayCloseString)
-        )
-          throw MESSAGES.ERROR_UPDATE_INDEX(filePath);
-
-        const nameCapitalize = CommandUtils.capitalizeString(
-          args.manager as string
-        );
-
-        const ormCapitalize = CommandUtils.capitalizeString(args.orm as string);
-
-        const ormCodeBlock = getCodeBlockSingleton(
-          args.manager as string,
-          nameCapitalize,
-          ormCapitalize
-        );
-
-        // Declaración de import basada en el ORM
-        const importStatement = getCodeBlockImports(
-          args.manager as string,
-          ormCapitalize
-        );
-
-        if (fileContent.includes(searchString)) {
-          let beforeSearchString = fileContent.split(searchString)[0];
-          const afterSearchString = fileContent.split(searchString)[1];
-
-          // Agrega la declaración de import justo antes del searchString si no existe
-          if (!beforeSearchString.includes(importStatement)) {
-            beforeSearchString += importStatement;
-          }
-
-          // Tu nuevo bloque de código
-          const newCodeBlock = ormCodeBlock
-            .split("\n")
-            .map((line) => "    " + line)
-            .join("\n");
-
-          if (fileContent.includes(arrayCloseString)) {
-            const updatedContent =
-              beforeSearchString +
-              searchString +
-              "\n" +
-              newCodeBlock +
-              "\n" +
-              afterSearchString;
-
-            fs.writeFileSync(filePath, updatedContent, "utf8");
-
-            MESSAGES.UPDATE_INDEX_SUCCESSFULLY(filePath);
-          } else {
-            MESSAGES.ERROR_UPDATE_INDEX(filePath);
-          }
-        } else {
-          MESSAGES.ERROR_UPDATE_INDEX(filePath);
-        }
-
+        
         // Adapter
         await CommandUtils.createFile(
           PATHS.PATH_ADAPTER(
@@ -326,3 +265,4 @@ function getCodeBlockImports(manager: string, orm: string): string {
 
 `;
 }
+

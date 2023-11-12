@@ -72,7 +72,7 @@ export const MESSAGES = {
     `${EMOJIS.NO_ENTRY} SingletonInitializers array not found in ${chalk.red(
       filePath
     )} this configuration must exist in order to create the Adapter. \n
-    Example: const singletonInitializers = []; \n
+    Example: export const singletonInitializers: Array<() => Promise<void>> = []; \n
     if it does not exist, please include it in the file ${chalk.blue(
       filePath
     )}`,
