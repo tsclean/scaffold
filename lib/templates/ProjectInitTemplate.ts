@@ -165,7 +165,7 @@ services:
         - PORT=9000
     command: sh -c 'npm install && npm run watch'
     networks:
-        - api-network
+        - api_network
 
 #   # MySQL Service
 #   mysql:
@@ -261,7 +261,7 @@ services:
 #   postgres_db:
 
 networks:
-  api-network:
+  api_network:
     driver: bridge
     `;
   }
@@ -386,7 +386,7 @@ import { PORT } from "@/application/config/environment";
 import { singletonInitializers } from "@/application/singleton";
 
 async function init(): Promise<void> {
-  // Iteramos sobre las funciones de inicialización.
+  /** Iterate the singleton functions */
   for (const initFn of singletonInitializers) {
     await initFn();
   }

@@ -1,17 +1,17 @@
 import ora from "ora";
 import yargs from "yargs";
-import ts from "typescript";
-import * as fs from "fs";
 
 import { PATHS } from "../utils/paths";
 import { EMOJIS } from "../utils/emojis";
 import { MESSAGES } from "../utils/messages";
 import { CommandUtils } from "./CommandUtils";
 import { CONSTANTS } from "../utils/constants";
-import { banner, errorMessage, executeCommand } from "../utils/helpers";
+import { errorMessage, executeCommand } from "../utils/helpers";
 import { DatabaseTemplate } from "../templates/DatabaseTemplate";
 import { AdaptersTemplate } from "../templates/AdaptersTemplate";
 import { ModelsTemplate } from "../templates/ModelsTemplate";
+import { SingletonGenerateTemplate } from "../templates/SingletonGenerateTemplate";
+import { SingletonTypes } from "../types/SingletonTypes";
 
 export class AdapterCreateCommand implements yargs.CommandModule {
   command = "create:adapter-orm";
@@ -77,7 +77,16 @@ export class AdapterCreateCommand implements yargs.CommandModule {
         if (fileExists) throw MESSAGES.FILE_EXISTS(path);
 
         const filePath = PATHS.PATH_SINGLETON(base);
-        
+
+        const paramsTemplate: SingletonTypes = {
+          filepath: filePath,
+          manager: args.manager as string,
+          instance: args.orm as string
+        };
+
+        // Singleton
+        SingletonGenerateTemplate.generate(paramsTemplate);
+
         // Adapter
         await CommandUtils.createFile(
           PATHS.PATH_ADAPTER(
@@ -215,54 +224,3 @@ export const services = [];
     return JSON.stringify(updatePackages, undefined, 3);
   }
 }
-
-/**
- * Método para incluir la instancia de conexión en el array singletonInitializers
- * en el archivo index.ts
- *
- * @param manager string
- * @param name string
- * @param orm string
- * @returns
- * ``` typescript
- * const singletonInitializers: Array<() => Promise<void>> = [
- *   async () => {
- *    const mysqlConfig = MysqlConfiguration.getInstance();
- *    await mysqlConfig.managerConnectionMysql();
- *  },
- * ];
- * ```
- */
-function getCodeBlockSingleton(
-  manager: string,
-  name: string,
-  orm: string
-): string {
-  const instance = manager === "mongoose" ? orm : name;
-  console.log(instance);
-  return `async () => {
-      const ${manager}Config = ${instance}Configuration.getInstance();
-      await ${manager}Config.managerConnection${instance}();
-},`;
-}
-
-/**
- * Método para incluir los imports de las instancias, cuando se genera un ORM
- * en el archivo index.ts
- *
- * @param manager Nombre del gestor de base de datos (mysql, pg, mongoose)
- * @param orm Nombre del orm (sequelize, mongo)
- *
- * @returns
- * ``` typescript
- * import { MysqlConfiguration } from "@/application/config/mysql-instance";
- * ```
- */
-function getCodeBlockImports(manager: string, orm: string): string {
-  const nameCapitalize = CommandUtils.capitalizeString(manager as string);
-  const instance = manager === "mongoose" ? orm : nameCapitalize;
-  return `import { ${instance}Configuration } from "@/application/config/${manager}-instance";
-
-`;
-}
-
