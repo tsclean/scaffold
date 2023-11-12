@@ -14,6 +14,7 @@ This CLI creates the structure of a NodeJs and TypeScript project based on clean
   - [Adapter ORM Generation](#adapter-orm-generation)
   - [Adapter Simple Generation](#adapter-simple-generation)
   - [Controller Generate](#controller-generation)
+  - [Singleton Instances](#singleton-instances)
   - [Decorators](#decorators)
   - [Example of use case](#example-of-use-case)
 
@@ -131,6 +132,93 @@ the tasks.
 
 ```shell
    scaffold create:adapter-orm --name=user --orm=mongo --manager=mongoose
+```
+
+## Singleton Instances
+
+In this version we add the management of the connections to the databases by means of the Singleton Pattern to create the instances, this was done in the `index.ts` file. These instances are added in the `singletonInitializers` array when the database connection adapter is created.
+
+Example: When the adapter is created for postgres, the Singleton class is generated to make the connection to the database and the function is added to initialize it.
+
+```typescript
+// src/application/config/pg-instance.ts
+import { Sequelize } from "sequelize-typescript";
+import { Logger } from "@tsclean/core";
+import { CONFIG_PG } from "@/application/config/environment";
+import { UserModelPg } from "@/infrastructure/driven-adapters/adapters/orm/sequelize/models/user-pg";
+
+/**
+ * Class that generates a connection instance for Pg using the Singleton pattern
+ */
+export class PgConfiguration {
+  /** Private logger instance for logging purposes */
+  private logger: Logger;
+
+  /** Private static instance variable to implement the Singleton pattern */
+  private static instance: PgConfiguration;
+
+  /** Sequelize instance for managing the PostgreSQL database connection */
+  public sequelize: Sequelize;
+
+  /** Private constructor to ensure that only one instance is created */
+  private constructor() {
+    /** Initialize the logger with the class name */
+    this.logger = new Logger(PgConfiguration.name);
+
+    /** Create a new Sequelize instance with the provided configuration */
+    this.sequelize = new Sequelize(
+      CONFIG_PG.database,
+      CONFIG_PG.user,
+      CONFIG_PG.password,
+      {
+        host: CONFIG_PG.host,
+        dialect: "postgres",
+        /** This array contains all the system models that are used for Pg. */
+        models: [
+          UserModelPg
+        ]
+      }
+    );
+  }
+
+  /** Method to get the instance of the class, following the Singleton pattern */
+  public static getInstance(): PgConfiguration {
+    if (!PgConfiguration.instance) {
+      PgConfiguration.instance = new PgConfiguration();
+    }
+    return PgConfiguration.instance;
+  }
+
+  /** Asynchronous method to manage the PostgreSQL database connection */
+  public async managerConnectionPg(): Promise<void> {
+    try {
+      /** Attempt to authenticate the connection to the database */
+      await this.sequelize.authenticate();
+      /** Log a success message if the authentication is successful */
+      this.logger.log(
+        `Connection successfully to database of Pg: ${CONFIG_PG.database}`
+      );
+    } catch (error) {
+      /** Log an error message if the authentication fails */
+      this.logger.error("Failed to connect to Pg", error);
+    }
+  }
+}
+
+// src/application/singleton.ts
+import { MongoConfiguration } from '@/application/config/mongoose-instance'
+import { MysqlConfiguration } from '@/application/config/mysql-instance'
+import { PgConfiguration } from '@/application/config/pg-instance'
+
+/**
+ * This array has all the singleton instances of the application
+ */
+export const singletonInitializers: Array<() => Promise<void>> = [
+  async () => {
+    const pgConfig = PgConfiguration.getInstance()
+    await pgConfig.managerConnectionPg()
+  }
+]
 ```
 
 ## Adapter Simple Generation
