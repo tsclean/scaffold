@@ -1,149 +1,200 @@
+import { CommandUtils } from "../commands/CommandUtils";
+
+/**
+ * Clase para generar instancias de conexión a bases de datos con el patrón singletón
+ * 
+ * @class DatabaseTemplate
+ * @author John Piedrahita
+ * @access public
+ * @version 1.0.0
+ */
 export class DatabaseTemplate {
 
-    /**
-     * Get content mongo-helper.ts file
-     */
-    static getTemplateMongoDatabase() {
-        return `import {Collection, MongoClient} from "mongodb";
+  /**
+   * Método para generar una instancia de conexión para Mongo con el patrón Singletón
+   * 
+   * @param orm string mongo
+   * @returns
+   * ```typescript
+   * import { connect, set } from "mongoose";
+   * import { Logger } from "@tsclean/core";
+   * import { MONGODB_URI } from "@/application/config/environment";
+   *
+   * export class MongoConfiguration {
+   *   private logger: Logger;
+   *   private static instance: MongoConfiguration;
+   *
+   *   private constructor() {
+   *     this.logger = new Logger(MongoConfiguration.name);
+   *   }
+   *
+   *   public static getInstance(): MongoConfiguration {
+   *      if (!this.instance) {
+   *          this.instance = new MongoConfiguration();
+   *      }
+   *      return this.instance;
+   *   }
+   *
+   *   public async managerConnectionMongo(): Promise<void> {
+   *     set("strictQuery", true);
+   *
+   *     try {
+   *        await connect(MONGODB_URI);
+   *        this.logger.log(`Connection successfully to database of Mongo: ${MONGODB_URI}`);
+   *     } catch (error) {
+   *        this.logger.error("Failed to connect to MongoDB", error);
+   *     }
+   *   }
+   * }
+   * ```
+   */
+  static getMongooseSingleton(orm: string): string {
+    const nameCapitalize = CommandUtils.capitalizeString(orm);
+    return `import { connect, set } from "mongoose";
+import { Logger } from "@tsclean/core";
+import { MONGODB_URI } from "@/application/config/environment";
 
-export const MongoHelper = {
-    client: null as MongoClient,
-    uri: null as string,
+export class ${nameCapitalize}Configuration {
+    private logger: Logger;
+    private static instance: ${nameCapitalize}Configuration;
 
-    async connect(uri: string): Promise<void> {
-        this.uri = uri
-        this.client = new MongoClient(uri)
-        await this.client.connect()
-    },
-
-    async disconnect(): Promise<void> {
-        await this.client.close()
-        this.client = null
-    },
-
-    async getCollection(name: string): Promise<Collection> {
-        return this.client.db().collection(name)
-    },
-
-    map: (data: any): any => {
-        const {_id, ...rest} = data
-        return Object.assign({}, rest, {id: _id})
-    },
-
-    mapCollection: (collection: any[]): any[] => {
-        return collection.map(c => MongoHelper.map(c))
-    }
-}`
-    }
-
-    /**
-     * Get content mysql-helper.ts file
-     * @protected
-     */
-    static getTemplateMysqlDatabase() {
-        return `import mysql from "mysql";
-import {CONFIG_MYSQL} from "@/application/config/environment";
-
-export const MysqlHelper = {
-    connection: null as string,
-
-    async connect(): Promise<void> {
-        this.connection = mysql.createConnection(CONFIG_MYSQL)
-
-        await this.connection.connect((err, result) => err ? console.log(err) : console.log("Connected MySQL."))
-    },
-
-    async disconnect(): Promise<void> {
-        await this.connection.end()
-    },
-}`
+    private constructor() {
+        this.logger = new Logger(${nameCapitalize}Configuration.name);
     }
 
-    static getTemplatePostgresDatabase() {
-        return `import {Pool} from 'pg'
-import {CONFIG_POSTGRES} from "@/application/config/environment";
+    public static getInstance(): ${nameCapitalize}Configuration {
+        if (!this.instance) {
+            this.instance = new ${nameCapitalize}Configuration();
+        }
+        return this.instance;
+    }
 
-export const PostgresHelper = {
-    connection: null,
+    public async managerConnection${nameCapitalize}(): Promise<void> {
+        set("strictQuery", true);
 
-    async connect(): Promise<void> {
-        this.connection = new Pool(CONFIG_POSTGRES)
-
-        await this.connection.connect((err, result) => err ? console.log(err) : console.log("Connected Postgres."))
-    },
-
-    async disconnect():Promise<void> {
-        this.connection.close()
+        try {
+            await connect(MONGODB_URI);
+            this.logger.log(\`Connection successfully to database of Mongo: \${MONGODB_URI}\`);
+        } catch (error) {
+            this.logger.error("Failed to connect to MongoDB", error);
+        }
     }
 }
-`
+`;
+  }
+
+  /**
+   * Metodo que generar una instancia con el patrón Singleto para las instancias de bases de datos relacionales
+   *
+   * @param name Nombre del modelo
+   * @param manager Gestor de base de datos (mysql, pg, mongoose)
+   * @returns
+   * ```typescript
+   * import { Sequelize } from "sequelize-typescript";
+
+    import { Logger } from "@tsclean/core";
+    import { CONFIG_MYSQL } from "@/application/config/environment";
+    import { UserModelMysql } from "@/infrastructure/driven-adapters/adapters/orm/sequelize/models/user-mysql";
+
+    export class MysqlConfiguration {
+      private logger: Logger;
+      private static instance: MysqlConfiguration;
+
+      public sequelize: Sequelize;
+
+      private constructor() {
+        this.logger = new Logger(MysqlConfiguration.name);
+        this.sequelize = new Sequelize(
+          CONFIG_MYSQL.database,
+          CONFIG_MYSQL.user,
+          CONFIG_MYSQL.password,
+          {
+            host: CONFIG_MYSQL.host,
+            dialect: "mysql",
+            // This array contains all the system models that are used for Mysql.
+            models: [
+              UserModelMysql
+            ]
+          }
+        );
+      }
+
+      public static getInstance(): MysqlConfiguration {
+        if (!MysqlConfiguration.instance) {
+          MysqlConfiguration.instance = new MysqlConfiguration();
+        }
+        return MysqlConfiguration.instance;
+      }
+
+      public async managerConnectionMysql(): Promise<void> {
+        try {
+          await this.sequelize.authenticate();
+          this.logger.log(
+            `Connection successfully to database of Mysql: ${CONFIG_MYSQL.database}`
+          );
+        } catch (error) {
+          this.logger.error("Failed to connect to Mysql", error);
+        }
+      }
     }
+   * ```
+   */
+  static getMysqlAndPostgresSingleton(name: string, manager: string): string {
+    const configEnv = `CONFIG_${manager.toUpperCase()}`;
+    const nameCapitalize = CommandUtils.capitalizeString(name);
+    const managerCapitalize = CommandUtils.capitalizeString(manager);
+    const dialect = manager === "pg" ? "postgres" : "mysql";
 
-    /**
-     * Get content configuration for mongo in server.ts file
-     */
-    static getTemplateServerMongo() {
-        return `import 'module-alias/register'
-        
-import helmet from 'helmet';
-import {StartProjectServer} from "@tsclean/core";
+    return `import { Sequelize } from "sequelize-typescript";
 
-import { AppContainer } from '@/application/app';
-import { MONGODB_URI, PORT } from '@/application/config/environment';
-import { MongoHelper } from '@/infrastructure/driven-adapters/adapters/mongo-adapter/mongo-helper';
+import { Logger } from "@tsclean/core";
+import { ${configEnv} } from "@/application/config/environment";
+import { ${nameCapitalize}Model${managerCapitalize} } from "@/infrastructure/driven-adapters/adapters/orm/sequelize/models/${name}-${manager}";
 
-MongoHelper.connect(MONGODB_URI)
-    .then(async () => {
-        console.log('Connected DB')
-        const app = await StartProjectServer.create(AppContainer);
-        app.use(helmet());
-        await app.listen(PORT, () => console.log('Running on port ' + PORT));
-    .catch(error => console.log(error))
-})
-`
+/**
+ * Class that generates a connection instance for ${managerCapitalize} using the Singleton pattern
+ */
+export class ${managerCapitalize}Configuration {
+  private logger: Logger;
+  private static instance: ${managerCapitalize}Configuration;
+
+  public sequelize: Sequelize;
+
+  private constructor() {
+    this.logger = new Logger(${managerCapitalize}Configuration.name);
+    this.sequelize = new Sequelize(
+      ${configEnv}.database,
+      ${configEnv}.user,
+      ${configEnv}.password,
+      {
+        host: ${configEnv}.host,
+        dialect: "${dialect}",
+        // This array contains all the system models that are used for ${managerCapitalize}.
+        models: [
+          ${nameCapitalize}Model${managerCapitalize}
+        ]
+      }
+    );
+  }
+
+  public static getInstance(): ${managerCapitalize}Configuration {
+    if (!${managerCapitalize}Configuration.instance) {
+      ${managerCapitalize}Configuration.instance = new ${managerCapitalize}Configuration();
     }
+    return ${managerCapitalize}Configuration.instance;
+  }
 
-    /**
-     * Get content configuration for mysql in server.ts file
-     */
-    static getTemplateServerMysql() {
-        return `import 'module-alias/register';
-        
-import helmet from 'helmet';
-import {StartProjectServer} from "@tsclean/core";
-
-import {AppContainer} from "@/application/app";
-import {PORT} from "@/application/config/environment";
-import {MysqlHelper} from "@/infrastructure/driven-adapters/adapters/mysql-adapter/mysql-helper";
-
-MysqlHelper.connect()
-    .then(async () => {
-        const app = await StartProjectServer.create(AppContainer);
-        app.use(helmet());
-        await app.listen(PORT, () => console.log('Running on port ' + PORT))})
-    .catch(err => console.log(err))
-`
+  public async managerConnection${managerCapitalize}(): Promise<void> {
+    try {
+      await this.sequelize.authenticate();
+      this.logger.log(
+        \`Connection successfully to database of ${managerCapitalize}: \${${configEnv}.database}\`
+      );
+    } catch (error) {
+      this.logger.error("Failed to connect to ${managerCapitalize}", error);
     }
-
-    /**
-     * Get content configuration for postgres in server.ts file
-     */
-    static getTemplateServerPostgres() {
-        return `import 'module-alias/register'
-        
-import helmet from 'helmet';
-import {StartProjectServer} from "@tsclean/core";
-
-import {AppContainer} from "@/application/app";
-import {PORT} from "@/application/config/environment";
-import {PostgresHelper} from "@/infrastructure/driven-adapters/adapters/postgres-adapter/postgres-helper";
-
-PostgresHelper.connect()
-    .then(async () => {
-        const app = await StartProjectServer.create(AppContainer);
-        app.use(helmet());
-        await app.listen(PORT, () => console.log('Running on port ' + PORT))})})
-    .catch(err => console.log(err))
-`
-    }
+  }
+}
+`;
+  }
 }

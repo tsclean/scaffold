@@ -30,7 +30,7 @@ export class CommandCreateAdapterSimple implements yargs.CommandModule {
             setTimeout(async () => spinner = ora(CONSTANTS.INSTALLING).start(), 1000)
 
             const basePath = PATHS.BASE_PATH_ADAPTER_SIMPLE();
-            const filename = PATHS.FILE_NAME_ADAPTER_SIMPLE(args.name);
+            const filename = PATHS.FILE_NAME_ADAPTER_SIMPLE(args.name as string);
 
             // The path for the validation of the file input is made up.
             const path = `${basePath}${filename}`;
@@ -42,13 +42,13 @@ export class CommandCreateAdapterSimple implements yargs.CommandModule {
             if (fileExists) throw MESSAGES.FILE_EXISTS(path);
 
             // Adapter
-            await CommandUtils.createFile(PATHS.PATH_ADAPTER_SIMPLE(args.name), CommandCreateAdapterSimple.getRepositoryAdapter(args.name as string))
+            await CommandUtils.createFile(PATHS.PATH_ADAPTER_SIMPLE(args.name as string), CommandCreateAdapterSimple.getRepositoryAdapter(args.name as string))
 
             setTimeout(() => {
                 spinner.succeed(CONSTANTS.INSTALLATION_COMPLETED)
                 spinner.stopAndPersist({
                     symbol: EMOJIS.ROCKET,
-                    text: `${MESSAGES.FILE_SUCCESS(CONSTANTS.ADAPTER, PATHS.PATH_ADAPTER_SIMPLE(args.name))}`
+                    text: `${MESSAGES.FILE_SUCCESS(CONSTANTS.ADAPTER, PATHS.PATH_ADAPTER_SIMPLE(args.name as string))}`
                 });
             }, 2000);
 
