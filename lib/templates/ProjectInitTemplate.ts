@@ -309,7 +309,7 @@ networks:
       typescript: "^5.2.2"
     });
 
-    packageJsonContent.dependencies["@tsclean/core"] = "^1.10.13";
+    packageJsonContent.dependencies["@tsclean/core"] = "^1.11.0";
     packageJsonContent.dependencies["dotenv"] = "^16.3.1";
     packageJsonContent.dependencies["helmet"] = "^7.0.0";
     packageJsonContent.dependencies["module-alias"] = "^2.2.3";
