@@ -299,19 +299,19 @@ networks:
     if (!packageJsonContent.devDependencies)
       packageJsonContent.devDependencies = {};
     Object.assign(packageJsonContent.devDependencies, {
-      "@types/node": "^20.8.10",
-      "@types/jest": "^29.5.7",
+      "@types/node": "^20.8.4",
+      "@types/jest": "^29.5.14",
       jest: "^29.7.0",
-      nodemon: "^3.0.1",
-      rimraf: "^5.0.5",
-      "ts-jest": "^29.1.1",
-      "ts-node": "^10.9.1",
-      typescript: "^5.2.2"
+      nodemon: "^3.0.7",
+      rimraf: "^6.0.1",
+      "ts-jest": "^29.2.5",
+      "ts-node": "^10.9.2",
+      typescript: "^5.6.3"
     });
 
-    packageJsonContent.dependencies["@tsclean/core"] = "^1.11.0";
-    packageJsonContent.dependencies["dotenv"] = "^16.3.1";
-    packageJsonContent.dependencies["helmet"] = "^7.0.0";
+    packageJsonContent.dependencies["@tsclean/core"] = "^1.12.0";
+    packageJsonContent.dependencies["dotenv"] = "^16.4.5";
+    packageJsonContent.dependencies["helmet"] = "^8.0.0";
     packageJsonContent.dependencies["module-alias"] = "^2.2.3";
 
     packageJsonContent.scripts["start"] = "node ./dist/index.js";
@@ -321,7 +321,7 @@ networks:
       'nodemon --exec "npm run build && npm run start" --watch src --ext ts';
 
     packageJsonContent._moduleAliases["@"] = "dist";
-    packageJsonContent.engines["node"] = ">=19.9.0";
+    packageJsonContent.engines["node"] = ">=20.15.1";
 
     return JSON.stringify(packageJsonContent, undefined, 3);
   }
