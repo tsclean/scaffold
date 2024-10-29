@@ -32,7 +32,7 @@ export class InitCommand implements yargs.CommandModule {
         : undefined;
 
       const fileExists = await CommandUtils.fileExists(basePath);
-      if (!fileExists) await structureInitialProject(args.name as string);
+      if (!fileExists) structureInitialProject(args.name as string);
 
       setTimeout(async () => {
         spinner = ora(`Installing... ${EMOJIS.COFFEE}`).start();

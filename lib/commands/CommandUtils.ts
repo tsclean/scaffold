@@ -1,6 +1,6 @@
 import * as fs from 'fs'
 import * as path from 'path'
-import mkdirp from 'mkdirp'
+import {mkdirp} from 'mkdirp'
 import {MESSAGES} from "../utils/messages";
 import {CONSTANTS} from "../utils/constants";
 

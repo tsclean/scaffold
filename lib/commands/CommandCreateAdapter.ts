@@ -205,12 +205,12 @@ export const services = [];
         updatePackages.dependencies["mongoose"] = "^8.0.0";
         break;
       case CONSTANTS.SEQUELIZE:
-        updatePackages.dependencies["sequelize"] = "^6.33.0";
-        updatePackages.dependencies["sequelize-typescript"] = "^2.1.5";
-        updatePackages.devDependencies["@types/sequelize"] = "^4.28.17";
+        updatePackages.dependencies["sequelize"] = "^6.37.5";
+        updatePackages.dependencies["sequelize-typescript"] = "^2.1.6";
+        updatePackages.devDependencies["@types/sequelize"] = "^4.28.20";
         switch (manager) {
           case CONSTANTS.MYSQL:
-            updatePackages.dependencies["mysql2"] = "^3.6.3";
+            updatePackages.dependencies["mysql2"] = "^3.11.3";
             break;
           case CONSTANTS.POSTGRES:
             updatePackages.dependencies["pg"] = "^8.11.3";
