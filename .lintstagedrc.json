@@ -1,0 +1,7 @@
+{
+  "*.ts": [
+    "prettier --write",
+    "eslint --fix",
+    "bash -c 'npm run build'"
+  ]
+}

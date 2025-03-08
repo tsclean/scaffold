@@ -1,11 +1,14 @@
 {
-   "name": "affiliates-MS",
+   "name": "affiliates-ms",
    "version": "1.0.0",
    "description": "Awesome project developed with Clean Architecture",
    "scripts": {
       "start": "node ./dist/index.js",
       "build": "rimraf dist && tsc -p tsconfig-build.json",
-      "watch": "nodemon --exec \"npm run build && npm run start\" --watch src --ext ts"
+      "lint": "eslint . --ext ts --fix",
+      "format": "prettier --write 'src/**/*.{ts,js,json,md}'",
+      "watch": "nodemon --exec \"npm run build && npm run start\" --watch src --ext ts",
+      "prepare": "husky"
    },
    "dependencies": {
       "@tsclean/core": "^1.12.1",
@@ -14,14 +17,25 @@
       "module-alias": "^2.2.3"
    },
    "devDependencies": {
-      "@types/node": "^20.8.4",
+      "@commitlint/cli": "^19.8.0",
+      "@commitlint/config-conventional": "^19.8.0",
+      "@eslint/js": "^9.22.0",
       "@types/jest": "^29.5.14",
+      "@types/node": "^20.8.4",
+      "@typescript-eslint/eslint-plugin": "^8.26.0",
+      "@typescript-eslint/parser": "^8.26.0",
+      "eslint": "^9.22.0",
+      "git-commit-msg-linter": "^5.0.8",
+      "globals": "^16.0.0",
+      "husky": "^9.1.7",
       "jest": "^29.7.0",
       "nodemon": "^3.0.7",
+      "prettier": "^3.5.3",
       "rimraf": "^6.0.1",
       "ts-jest": "^29.2.5",
       "ts-node": "^10.9.2",
-      "typescript": "^5.6.3"
+      "typescript": "^5.6.3",
+      "typescript-eslint": "^8.26.0"
    },
    "_moduleAliases": {
       "@": "dist"
