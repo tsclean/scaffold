@@ -9,7 +9,7 @@ import {CommandCreateAdapterSimple} from "./commands/CommandCreateAdapterSimple"
 import {CommandCreateServiceResource} from "./commands/CommandCreateServiceResource";
 import {CommandCreateInterfaceResource} from './commands/CommandCreateInterfaceResource';
 
-yargs.usage("Usage: $0 <command> [options]")
+yargs.scriptName("scaffold").usage("Usage: $0 <command> [options]")
     .command(new InitCommand())
     .command(new AdapterCreateCommand())
     .command(new CommandCreateAdapterSimple())

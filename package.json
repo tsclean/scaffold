@@ -1,10 +1,10 @@
 {
    "name": "@tsclean/scaffold",
-   "version": "2.4.0",
+   "version": "2.4.1",
    "description": "This CLI creates an initial structure of a project based on clean architecture.",
    "main": "index.js",
    "bin": {
-      "scaffold": "bin/scaffold.ts"
+      "scaffold": "bin/scaffold.js"
    },
    "publishConfig": {
       "access": "public"
