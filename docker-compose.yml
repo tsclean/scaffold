@@ -1,0 +1,116 @@
+version: '3.1'
+services:
+# Api Service
+  api:
+    build:
+        context: .
+        dockerfile: ./src/deployment/Dockerfile
+    volumes:
+        - ./:/app
+        - /app/node_modules
+    ports:
+        - "9000:9000"
+    environment:
+        - NODE_ENV=development
+        - PORT=9000
+    command: sh -c 'npm install && npm run watch'
+    networks:
+        - api_network
+
+#   # MySQL Service
+#   mysql:
+#     image: mysql:8.0
+#     container_name: mysql
+#     command: --default-authentication-plugin=mysql_native_password
+#     restart: always
+#     ports:
+#       - ${DB_PORT_MYSQL}:3306
+#     environment:
+#       MYSQL_DATABASE: ${DATABASE_MYSQL}
+#       MYSQL_ROOT_PASSWORD: ${DB_PASSWORD_MYSQL}
+#       MYSQL_PASSWORD: ${DB_PASSWORD_MYSQL}
+#       MYSQL_USER: ${DB_USER_MYSQL}
+#       SERVICE_TAGS: dev
+#       SERVICE_NAME: mysql
+#     volumes:
+#       - mysql_data:/var/lib/mysql
+#     networks:
+#       - api_network
+
+#   # Mongo Service
+#   mongo:
+#     image: mongo
+#     restart: always
+#     container_name: mongo
+#     ports:
+#       - "27017:27017"
+#     volumes:
+#       - mongo_db:/data/db
+#       - mongo_config:/data/config
+#     networks:
+#       - api_network
+
+#   # Pg Service
+#   postgres:
+#     image: postgres:latest
+#     container_name: api_postgres
+#     environment:
+#       POSTGRES_USER: ${DB_USER_POSTGRES}
+#       POSTGRES_PASSWORD: ${DB_PASSWORD_POSTGRES}
+#       POSTGRES_DB: ${DATABASE_POSTGRES}
+#     ports:
+#       - ${DB_PORT_POSTGRES}:5432
+#     volumes:
+#       - postgres_db:/var/lib/postgresql/data
+#     networks:
+#       - api_network
+
+#   # pgAdmin Service
+#   pgadmin:
+#     image: dpage/pgadmin4:latest
+#     environment:
+#       PGADMIN_DEFAULT_EMAIL: admin@example.com # Change to the email you want to use to login to pgAdmin
+#       PGADMIN_DEFAULT_PASSWORD: admin # Change to the password you want to use to login to pgAdmin
+#     ports:
+#       - "5050:80"
+#     depends_on:
+#       - postgres
+#     networks:
+#       - api_network
+
+#   # phpAdmin Service
+#   phpmyadmin:
+#     image: phpmyadmin
+#     depends_on:
+#       - mysql
+#     environment:
+#       - UPLOAD_LIMIT=200M
+#       - POST_MAX_SIZE=200M
+#       - PHP_UPLOAD_MAX_FILESIZE=200M
+#     ports:
+#       - "8080:80"
+#     networks:
+#       - api_network
+
+#   # mongoexpress Service
+#   mongoexpress:
+#     image: mongo-express
+#     ports:
+#       - "8081:8081"
+#     depends_on:
+#       - mongo
+#     environment:
+#       ME_CONFIG_MONGODB_URL: mongodb://mongo:27017/
+#     networks:
+#       - api_network
+
+# volumes:
+#   mysql_data:
+#   mongo_db:
+#   mongo_config:
+#   postgres_db:
+
+networks:
+  api_network:
+    driver: bridge
+    
