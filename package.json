@@ -1,11 +1,13 @@
 {
    "name": "affiliates-ms",
    "version": "1.0.0",
+   "type": "module",
    "description": "Awesome project developed with Clean Architecture",
    "scripts": {
       "start": "node ./dist/index.js",
       "build": "rimraf dist && tsc -p tsconfig-build.json",
-      "lint": "eslint . --ext ts --fix",
+      "lint": "eslint . --ext .ts",
+      "lint:fix": "eslint . --ext .ts --fix",
       "format": "prettier --write 'src/**/*.{ts,js,json,md}'",
       "watch": "nodemon --exec \"npm run build && npm run start\" --watch src --ext ts",
       "prepare": "husky"
@@ -25,6 +27,7 @@
       "@typescript-eslint/eslint-plugin": "^8.26.0",
       "@typescript-eslint/parser": "^8.26.0",
       "eslint": "^9.22.0",
+      "eslint-config-prettier": "^10.1.1",
       "eslint-plugin-prettier": "^5.2.3",
       "git-commit-msg-linter": "^5.0.8",
       "globals": "^16.0.0",
