@@ -33,7 +33,7 @@ export class CommandCreateInterfaceResource implements yargs.CommandModule {
     let fileExists: boolean;
 
     try {
-      const fileContent = CommandCreateInterfaceResource.getTemplateInterface(
+      const fileContent = CommandCreateInterfaceResource.getTemplateResourceInterface(
         args.name as any
       );
 
@@ -71,25 +71,31 @@ export class CommandCreateInterfaceResource implements yargs.CommandModule {
   }
 
   /**
-   * Get contents interface files
-   * @param param
-   * @protected
-   */
-  protected static getTemplateInterface(param: string) {
-    const name = CommandUtils.capitalizeString(param);
-    const nameTransform = param.replace(/-/g, "_");
-    const nameRef = nameTransform.toUpperCase();
-    
-    return `import {Add${name}Params, ${name}Entity} from "@/domain/entities/${param}";
+  * Get contents for resource interface
+  * @param param nombre del recurso, puede contener guiones
+  * @protected
+  */
+  protected static getTemplateResourceInterface(param: string): string {
+    const namePascal = CommandUtils.capitalizeString(
+      param
+        .split("-")
+        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+        .join("")
+    );
 
-export const ${nameRef}_RESOURCE_REPOSITORY = "${nameRef}_RESOURCE_REPOSITORY";
+    const nameSnakeUpper = param.replace(/-/g, "_").toUpperCase();
 
-export interface I${name}ResourceRepository {
-    findAll: () => Promise<${name}Entity[]>;
-    save: (data: Add${name}Params) => Promise<${name}Entity>;
-    findById: (id: number) => Promise<${name}Entity>;
-    update: (id: number, data: any) => Promise<boolean | undefined>
+    return `import { Add${namePascal}Params, ${namePascal}Entity } from "@/domain/entities/${param}";
+
+export const ${nameSnakeUpper}_RESOURCE_REPOSITORY = "${nameSnakeUpper}_RESOURCE_REPOSITORY";
+
+export interface I${namePascal}ResourceRepository {
+  findAll: () => Promise<${namePascal}Entity[]>;
+  save: (data: Add${namePascal}Params) => Promise<${namePascal}Entity>;
+  findById: (id: number) => Promise<${namePascal}Entity>;
+  update: (id: number, data: any) => Promise<boolean | undefined>;
 }
 `;
   }
+
 }
