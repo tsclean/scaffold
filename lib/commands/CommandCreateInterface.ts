@@ -1,10 +1,10 @@
 import ora from "ora";
 import yargs from "yargs";
 
-import {EMOJIS} from "../utils/emojis";
-import {MESSAGES} from "../utils/messages";
-import {CommandUtils} from "./CommandUtils";
-import {banner, errorMessage} from "../utils/helpers";
+import { EMOJIS } from "../utils/emojis";
+import { MESSAGES } from "../utils/messages";
+import { CommandUtils } from "./CommandUtils";
+import { banner, errorMessage } from "../utils/helpers";
 
 export class InterfaceCreateCommand implements yargs.CommandModule {
     command = "create:interface";
@@ -36,7 +36,7 @@ export class InterfaceCreateCommand implements yargs.CommandModule {
 
             setTimeout(() => (spinner = ora('Installing...').start()), 1000);
 
-            if(args.path as string === "entities" || args.path as string === "service" || args.path as string === "infra") {
+            if (args.path as string === "entities" || args.path as string === "service" || args.path as string === "infra") {
                 switch (args.path) {
                     case "entities":
                         basePath = `${process.cwd()}/src/domain/entities/contracts`
@@ -79,24 +79,31 @@ export class InterfaceCreateCommand implements yargs.CommandModule {
      * @protected
      */
     protected static getTemplateInterface(param: string, path: string) {
-        const string = CommandUtils.capitalizeString(param);
-        const nameRef = param.toUpperCase();
+
+        const nameRef = param.toUpperCase().replace(/-/g, "_");
+
+        const string = param
+            .split("-")
+            .map((p) => p.charAt(0).toUpperCase() + p.slice(1))
+            .join("");
+
+        const repositoryConst = `export const ${nameRef}_REPOSITORY = '${nameRef}_REPOSITORY';`;
 
         switch (path) {
             case 'entities':
-                return `export const ${nameRef}_REPOSITORY = '${nameRef}_REPOSITORY';
+                return `${repositoryConst}
 
 export interface I${string}Repository {
     
 }`
             case 'service':
-                return `export const ${nameRef}_REPOSITORY = '${nameRef}_REPOSITORY';
+                return `${repositoryConst}
                 
 export interface I${string}Service {
     
 }`
             case 'infra':
-                return `export const ${nameRef}_REPOSITORY = '${nameRef}_REPOSITORY';
+                return `${repositoryConst}
 
 export interface I${string} {
     
